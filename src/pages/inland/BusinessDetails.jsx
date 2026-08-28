@@ -67,10 +67,13 @@ export default function BusinessDetails({ data, set, classCode, setClassCode, on
               <Select label="Industry experience" required options={YEAR_OPTIONS} value={data.industryExperience} onChange={(v) => set({ industryExperience: v })} placeholder="Select years" error={err('industryExperience')} />
             </FormGrid>
 
+            {/* Bare lines, not a panel: a rule broken between two fields is
+                the same kind of message as one raised by a single field, so
+                it is written the same way. */}
             {ruleErrors.length > 0 && (
-              <div className="rounded-lg px-3.5 py-2.5" style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.35)' }}>
+              <div>
                 {ruleErrors.map(e => (
-                  <FieldError key={e} className="mt-0">{e}</FieldError>
+                  <FieldError key={e}>{e}</FieldError>
                 ))}
               </div>
             )}

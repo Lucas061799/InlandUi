@@ -7,7 +7,7 @@ import jungleImg from '../../assets/jungle.png'
 import { Textarea } from '../../components/FormField'
 import ClassSearch from '../../components/inland/ClassSearch'
 import { BrandText } from '../../components/inland/primitives'
-import { BRAND_GRADIENT, CARRIERS, classById } from '../../data/inland'
+import { BRAND_GRADIENT, classById } from '../../data/inland'
 import { MIN_DESCRIPTION_WORDS, countWords } from './validation'
 
 /* Page zero. The class and the words an underwriter will read are the two
@@ -57,28 +57,10 @@ export default function PageZero({ onStart, initialClassId, initialDescription }
               </div>
 
               <div className="space-y-5 mb-6">
-                {selected ? (
-                  <div>
-                    <label className="block text-[13px] font-semibold text-gray-600 mb-1.5 tracking-wide">
-                      What work do they do?<span className="text-red-400 ml-0.5">*</span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setClassId('')}
-                      className="im-matched-card w-full rounded-lg px-3.5 py-2.5 flex items-center justify-between gap-3 text-left"
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-gray-900 truncate">{selected.name}</span>
-                        <span className="block text-[11.5px] text-gray-500">
-                          {selected.id} · {selected.carriers.length} of {CARRIERS.length} carriers write this
-                        </span>
-                      </span>
-                      <span className="text-[12px] font-semibold shrink-0" style={{ color: '#A614C3' }}>Change</span>
-                    </button>
-                  </div>
-                ) : (
-                  <ClassSearch label="What work do they do?" onChoose={setClassId} />
-                )}
+                {/* The answer stays in the field it was asked in — one control
+                    before and after choosing, so changing the class is the
+                    same gesture as picking it. */}
+                <ClassSearch label="What work do they do?" value={selected} onChoose={setClassId} />
 
                 <div>
                   <div className="flex items-end justify-between mb-1.5">

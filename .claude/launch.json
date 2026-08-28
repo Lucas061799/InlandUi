@@ -4,8 +4,9 @@
     {
       "name": "inland-marine",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--port", "5178"],
-      "port": 5178
+      "runtimeArgs": ["vite"],
+      "port": 5178,
+      "autoPort": true
     }
   ]
 }

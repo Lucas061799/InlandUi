@@ -26,4 +26,10 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  /* The config files run in Node, not the browser — without this `process`
+     reads as undefined in vite.config.js. */
+  {
+    files: ['vite.config.js', 'eslint.config.js', 'api/**/*.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])
