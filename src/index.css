@@ -267,6 +267,172 @@ input, select, textarea, button {
   color: #F9FAFB !important;
 }
 
+/* Carrier outcome chips. Amber and red are the only non-brand hues in the
+   app; both get an explicit dark value so they stay legible on navy. */
+.im-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px;
+  border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+.im-chip-muted { background: #F3F4F6; color: #6B7280; }
+.im-chip-warn  { background: rgba(245,158,11,0.12); color: #B45309; }
+.im-chip-stop  { background: rgba(239,68,68,0.10); color: #B91C1C; }
+[data-dark="true"] .im-chip-muted { background: rgba(255,255,255,0.08) !important; color: #9CA3AF !important; }
+[data-dark="true"] .im-chip-warn  { background: rgba(245,158,11,0.18) !important; color: #FCD34D !important; }
+[data-dark="true"] .im-chip-stop  { background: rgba(239,68,68,0.18) !important; color: #FCA5A5 !important; }
+
+.im-note-warn { color: #B45309; }
+[data-dark="true"] .im-note-warn { color: #FCD34D !important; }
+
+/* Small brand arrows that sit beside gradient text. */
+.im-arrow path { stroke: #A614C3; }
+[data-dark="true"] .im-arrow path { stroke: #F0ABFC !important; }
+
+/* The matched-class card. A 7% brand tint and a 22% brand border sit well
+   on white and vanish on the dark navy surface, so dark gets its own pair. */
+.im-matched-card {
+  background: linear-gradient(88.09deg, rgba(92,46,212,0.07) 0%, rgba(166,20,195,0.07) 100%);
+  border: 1px solid rgba(92,46,212,0.22);
+}
+[data-dark="true"] .im-matched-card {
+  background: linear-gradient(88.09deg, rgba(124,58,237,0.20) 0%, rgba(166,20,195,0.13) 100%) !important;
+  border-color: rgba(167,139,250,0.38) !important;
+}
+
+/* Brand-tinted icon tiles. 9% purple on white is a soft lilac chip; the
+   same value on the dark navy surface disappears, so it lifts in dark. */
+.im-icon-tile { background: rgba(92,46,212,0.09); }
+[data-dark="true"] .im-icon-tile { background: rgba(167,139,250,0.28) !important; }
+
+/* ── Inland Marine — icon gradients in dark mode ───────────────────
+   The brand gradient is a dark purple→magenta pair. Painted as an SVG
+   stroke on the dark navy surface it reads almost black, so every
+   im-prefixed gradient swaps to the lighter stops in dark mode. */
+[data-dark="true"] linearGradient[id^="im"] stop:first-child { stop-color: #C4B5FD !important; }
+[data-dark="true"] linearGradient[id^="im"] stop:last-child  { stop-color: #F0ABFC !important; }
+
+/* Carrier-context banner. A 6% tint and a 14% border read on white and
+   vanish on the dark navy surface, so dark gets its own pair. */
+.im-banner {
+  background: linear-gradient(88.09deg, rgba(92,46,212,0.06) 0%, rgba(166,20,195,0.06) 100%);
+  border: 1px solid rgba(92,46,212,0.14);
+}
+[data-dark="true"] .im-banner {
+  background: linear-gradient(88.09deg, rgba(124,58,237,0.18) 0%, rgba(166,20,195,0.12) 100%) !important;
+  border-color: rgba(167,139,250,0.32) !important;
+}
+
+/* Row remove. Quiet until you reach for it, then red. */
+.im-remove { color: #9CA3AF; background: transparent; transition: background 120ms ease, color 120ms ease; }
+.im-remove:hover, .im-remove:focus-visible { background: rgba(239,68,68,0.10); color: #EF4444; }
+[data-dark="true"] .im-remove { color: #8B8FA8 !important; }
+[data-dark="true"] .im-remove:hover, [data-dark="true"] .im-remove:focus-visible {
+  background: rgba(239,68,68,0.18) !important;
+  color: #FCA5A5 !important;
+}
+
+/* Info dot and its popover — the Builder's Risk pattern: a filled brand
+   circle with a white "i", opening a card with a tinted title bar and an
+   explicit close, rather than a hover tooltip. */
+.im-info-dot {
+  background: linear-gradient(88.09deg, #5C2ED4 0.11%, #A614C3 63.8%);
+  color: #FFFFFF;
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+.im-info-dot:hover, .im-info-dot:focus-visible {
+  box-shadow: 0 2px 10px rgba(92,46,212,0.35);
+  transform: translateY(-1px);
+}
+[data-dark="true"] .im-info-dot {
+  background: linear-gradient(88.09deg, #A78BFA 0.11%, #E879F9 63.8%) !important;
+  color: #1B0750 !important;
+}
+
+.im-info-pop {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 12px 32px rgba(15,10,40,0.16);
+}
+.im-info-pop-head {
+  background: linear-gradient(88.09deg, rgba(92,46,212,0.08) 0%, rgba(166,20,195,0.08) 100%);
+  border-bottom: 1px solid rgba(92,46,212,0.12);
+}
+.im-info-pop-close {
+  background: rgba(92,46,212,0.10);
+  color: #5C2ED4;
+}
+.im-info-pop-close:hover { background: rgba(92,46,212,0.18); }
+
+[data-dark="true"] .im-info-pop {
+  background: #252948 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5) !important;
+}
+[data-dark="true"] .im-info-pop-head {
+  background: linear-gradient(88.09deg, rgba(124,58,237,0.28) 0%, rgba(166,20,195,0.20) 100%) !important;
+  border-bottom-color: rgba(167,139,250,0.28) !important;
+}
+[data-dark="true"] .im-info-pop-close {
+  background: rgba(167,139,250,0.22) !important;
+  color: #E9D5FF !important;
+}
+
+/* Hairlines inside cards. Written as classes because a shorthand
+   border-top is invisible to the dark-mode rules, which match on
+   border-color — a 16% purple line disappears on the dark card, and a
+   #E5E7EB one glares. */
+.im-rule-brand { border-top: 1px solid rgba(92,46,212,0.16); }
+[data-dark="true"] .im-rule-brand { border-top-color: rgba(167,139,250,0.30) !important; }
+
+.im-rule { border-top: 1px solid #E5E7EB; }
+[data-dark="true"] .im-rule { border-top-color: rgba(255,255,255,0.10) !important; }
+
+/* Carrier logo tile. The marks are printed in dark ink, so the tile stays
+   white in dark mode too — the blanket "white surfaces go dark" rule was
+   turning it navy and swallowing the logo. */
+.im-carrier-tile { background: #FFFFFF !important; border: 1px solid #E5E7EB !important; }
+[data-dark="true"] .im-carrier-tile { border-color: rgba(255,255,255,0.18) !important; }
+
+/* The switch knob. It is a white span, and the blanket dark-mode rule that
+   turns white surfaces into dark ones was dimming it to 6% — the knob has
+   to stay white in both modes or the switch loses its state. */
+.im-toggle-knob { background: #FFFFFF !important; }
+
+/* Loading shimmer — carriers answer one at a time, and a bar that moves
+   says "still waiting" better than a static grey block. */
+@keyframes imSkelShimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+.im-skel {
+  background: linear-gradient(90deg, #EEF2F7 0%, #F8FAFC 50%, #EEF2F7 100%);
+  background-size: 200% 100%;
+  animation: imSkelShimmer 1.4s ease-in-out infinite;
+}
+[data-dark="true"] .im-skel {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.06) 100%) !important;
+  background-size: 200% 100%;
+}
+
+/* ── Inland Marine — carrier appetite ──────────────────────────────
+   Green is not in the palette, and a green chip on the brand-tinted
+   class card fights it. A carrier that writes the class gets a neutral
+   chip with a brand dot; one that doesn't gets a dashed outline. */
+.im-pill-on {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #374151;
+}
+[data-dark="true"] .im-pill-on {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.14) !important;
+  color: #E5E7EB !important;
+}
+
+.im-pill-off {
+  background: transparent;
+  border: 1px dashed #D1D5DB;
+  color: #9CA3AF;
+}
+[data-dark="true"] .im-pill-off {
+  border-color: rgba(255,255,255,0.18) !important;
+  color: #8B8FA8 !important;
+}
+
 /* Gradient button */
 .btn-gradient {
   background: linear-gradient(88.09deg, #5C2ED4 0.11%, #A614C3 63.8%);

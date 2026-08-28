@@ -506,15 +506,21 @@ export function RadioGroup({ label, required, options = [], value, onChange, cla
 }
 
 // Checkbox
-export function Checkbox({ label, checked, onChange, className = '' }) {
+export function Checkbox({ label, checked, onChange, disabled = false, className = '' }) {
   return (
-    <label className={`flex items-start gap-2.5 cursor-pointer group ${className}`}>
+    <label className={`flex items-start gap-2.5 group ${disabled ? 'cursor-default' : 'cursor-pointer'} ${className}`}
+      style={disabled ? { opacity: 0.45 } : undefined}>
       <div
-        className={`w-4 h-4 rounded border-2 flex items-center justify-center mt-0.5 shrink-0 transition-all ${
-          checked ? 'border-[#A614C3]' : 'border-gray-300 group-hover:border-[#5C2ED4]/40'
+        /* The box is 16px and the label's first line is 16px, so they line
+           up with no nudge — items-start keeps a wrapped label hanging
+           correctly under the box rather than centring on three lines. */
+        /* Checked is the gradient fill alone — the outline belongs to the
+           empty box. */
+        className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all ${
+          checked ? '' : disabled ? 'border-2 border-gray-300' : 'border-2 border-gray-300 group-hover:border-[#5C2ED4]/40'
         }`}
         style={checked ? { background: 'linear-gradient(88.09deg, #5C2ED4 0%, #A614C3 100%)' } : {}}
-        onClick={() => onChange && onChange(!checked)}
+        onClick={() => !disabled && onChange && onChange(!checked)}
       >
         {checked && (
           <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 10">
