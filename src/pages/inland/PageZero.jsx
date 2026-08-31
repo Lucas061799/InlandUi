@@ -45,8 +45,14 @@ export default function PageZero({ onStart, initialClassId, initialDescription }
 
           <div className="relative z-10 min-h-full flex flex-col justify-center items-center py-10 px-6 md:px-[8%] lg:px-[10%]">
             <div className="w-full max-w-xl">
-              <div className="mb-7">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">Inland Marine</p>
+              <div className="mb-6">
+                {/* Product eyebrow above the heading, the same gradient
+                    treatment Builder's Risk uses — bold, uppercase, wide
+                    tracking, brand gradient. `.text-gradient` already carries
+                    its own brighter dark-mode ramp. */}
+                <p className="text-[12px] md:text-[13px] font-bold uppercase tracking-widest text-gradient mb-3">
+                  Inland Marine Marketplace
+                </p>
                 <h1 className="text-3xl md:text-4xl font-bold text-navy leading-tight mb-4" style={{ fontWeight: 800 }}>
                   Get Multiple Quotes.<br />
                   <span className="text-gradient">One Easy Application.</span>

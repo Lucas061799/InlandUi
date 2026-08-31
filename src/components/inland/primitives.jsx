@@ -444,22 +444,26 @@ export function StepNav({ onBack, onContinue, canContinue = true, hint, continue
     /* Back on the left, forward on the right — the same footer shape as the
        GL / BOP review page. The empty span keeps Continue pinned right on
        the first step, which has nowhere to go back to. */
-    <div className="flex items-center justify-between gap-4 pt-2 flex-wrap">
-      {onBack ? (
-        <button
-          type="button"
-          onClick={onBack}
-          className="h-10 px-6 min-w-[112px] inline-flex items-center justify-center rounded-xl text-sm font-semibold transition-all"
-          style={{ background: 'white', border: '1.5px solid #E5E7EB', color: '#6B7280' }}
-        >
-          Back
-        </button>
-      ) : <span />}
+    <div className="pt-2">
+      {/* The hint gets its own line above the buttons. Wedged between Back
+          and Continue it squeezed both and read as a label on the button
+          rather than a note about the step. */}
+      {hint && (
+        <p className={`text-xs mb-3 ${canContinue ? 'text-gray-400' : 'text-gray-500'}`}>{hint}</p>
+      )}
 
-      <div className="flex items-center gap-4">
-        {hint && (
-          <span className={`text-xs ${canContinue ? 'text-gray-400' : 'text-gray-500'}`}>{hint}</span>
-        )}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="h-10 px-6 min-w-[112px] inline-flex items-center justify-center rounded-xl text-sm font-semibold transition-all"
+            style={{ background: 'white', border: '1.5px solid #E5E7EB', color: '#6B7280' }}
+          >
+            Back
+          </button>
+        ) : <span />}
+
         <PrimaryButton onClick={onContinue} disabled={!canContinue}>{continueLabel}</PrimaryButton>
       </div>
     </div>

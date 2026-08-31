@@ -278,6 +278,16 @@ input, select, textarea, button {
 [data-dark="true"] .im-chip-warn  { background: rgba(245,158,11,0.18) !important; color: #FCD34D !important; }
 [data-dark="true"] .im-chip-stop  { background: rgba(239,68,68,0.18) !important; color: #FCA5A5 !important; }
 
+/* Carrier row status pills — GL's tinted fill with a border of the same
+   hue. Written as classes, not inline styles: GL picks these from an isDark
+   prop, and this flow has no such prop, so the dark values live here. */
+.im-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px;
+  font-size: 10px; font-weight: 700; white-space: nowrap; }
+.im-pill-grey  { background: rgba(156,163,175,0.18); color: #6B7280; border: 1px solid rgba(156,163,175,0.35); }
+.im-pill-brand { background: rgba(92,46,212,0.08);   color: #5C2ED4; border: 1px solid rgba(92,46,212,0.25); }
+[data-dark="true"] .im-pill-grey  { background: rgba(255,255,255,0.08) !important; color: #9CA3AF !important; border-color: rgba(255,255,255,0.18) !important; }
+[data-dark="true"] .im-pill-brand { background: rgba(167,139,250,0.16) !important; color: #C4B5FD !important; border-color: rgba(167,139,250,0.38) !important; }
+
 .im-note-warn { color: #B45309; }
 [data-dark="true"] .im-note-warn { color: #FCD34D !important; }
 

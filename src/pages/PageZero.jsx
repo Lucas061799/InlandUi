@@ -171,6 +171,13 @@ export default function PageZero({ onStart }) {
                   page feels stable; only the subtitle + body content
                   swap between question intake and product picker. */}
               <div className="mb-6">
+                {/* Product eyebrow above the heading, the same gradient
+                    treatment Builder's Risk uses — bold, uppercase, wide
+                    tracking, brand gradient. `.text-gradient` already carries
+                    its own brighter dark-mode ramp. */}
+                <p className="text-[12px] md:text-[13px] font-bold uppercase tracking-widest text-gradient mb-3">
+                  BOP & General Liability Marketplace
+                </p>
                 <h1 className="text-3xl md:text-4xl font-bold text-navy leading-tight mb-4" style={{ fontWeight: 800 }}>
                   Get Multiple Quotes.<br />
                   <span className="text-gradient">One Easy Application.</span>
