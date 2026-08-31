@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Select } from '../../components/FormField'
 import {
-  BrandText, PillGroup, SectionLabel, StepHeader, StepNav, Tag,
+  BrandText, InfoLine, PillGroup, SectionLabel, StepHeader, StepNav, Tag,
 } from '../../components/inland/primitives'
 import {
   BRAND_GRADIENT, CARRIERS, DEDUCTIBLES, DEFAULT_DEDUCTIBLE, ENHANCED_DEFAULTS,
@@ -271,9 +271,6 @@ export default function CompareQuotes({ data, set, submission, onBack, onContinu
           without it the controls read as settings already applied rather
           than ones that move the prices below. */}
       <div className="rounded-xl px-5 sm:px-6 py-5 mb-6 space-y-5" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-        <p className="text-sm text-gray-500 leading-relaxed max-w-2xl">
-          Changing either answer re-rates every price below. Then pick a carrier.
-        </p>
         <div>
           <SectionLabel>Deductible</SectionLabel>
           <PillGroup
@@ -293,6 +290,12 @@ export default function CompareQuotes({ data, set, submission, onBack, onContinu
             </p>
           )}
         </div>
+
+        {/* Under both answers rather than above them: it is what to do once
+            they are set, not an instruction for setting them. */}
+        <InfoLine icon="alert">
+          Changing either answer re-rates every price below. Then pick a carrier.
+        </InfoLine>
       </div>
 
       {quoting && (

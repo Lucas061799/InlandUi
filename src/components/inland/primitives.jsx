@@ -87,13 +87,17 @@ export function Banner({ children, icon = true }) {
 }
 
 /* A note under a group of fields: an icon and one grey line. Quieter than
-   the tinted Banner, which is for things a carrier is telling you. */
-export function InfoLine({ children, className = '' }) {
+   the tinted Banner, which is for things a carrier is telling you.
+
+   `icon="alert"` swaps the circled i for a circled exclamation — same ring,
+   the glyph just turns over — for a note that is a heads-up rather than a
+   definition. */
+export function InfoLine({ children, className = '', icon = 'info' }) {
   return (
     <p className={`flex items-start gap-2 text-[11.5px] text-gray-400 leading-relaxed ${className}`}>
       <svg className="w-3.5 h-3.5 shrink-0 mt-px" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="9" stroke="url(#imInfoLine)" strokeWidth="1.7" />
-        <path d="M12 11v5M12 8h.01" stroke="url(#imInfoLine)" strokeWidth="1.9" strokeLinecap="round" />
+        <path d={icon === 'alert' ? 'M12 7v6M12 16h.01' : 'M12 11v5M12 8h.01'} stroke="url(#imInfoLine)" strokeWidth="1.9" strokeLinecap="round" />
         <defs>
           <linearGradient id="imInfoLine" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#5C2ED4" /><stop offset="100%" stopColor="#A614C3" />
