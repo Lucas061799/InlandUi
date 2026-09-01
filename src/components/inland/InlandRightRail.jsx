@@ -97,13 +97,10 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
                         className="im-carrier-tile rounded-lg flex items-center justify-center shrink-0"
                         style={{ width: 36, height: 36, padding: 3.5 }}
                       >
-                        {/* The marks carry uneven whitespace on their left
-                            edge, so a pixel to the right centres them. */}
                         <img
                           src={c.logo}
                           alt=""
                           className="max-w-full max-h-full object-contain"
-                          style={{ transform: 'translateX(1px)' }}
                         />
                       </div>
 
