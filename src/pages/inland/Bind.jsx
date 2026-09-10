@@ -68,47 +68,23 @@ function ChoiceCard({ selected, label, detail, onSelect, children }) {
   )
 }
 
-/* The three things that have to happen in order on the upload path, with
-   what is already done ticked off. Read-only — it reports, it does not ask. */
-function UploadChecklist({ termsSaved, uploaded }) {
-  const steps = [
-    {
-      done: termsSaved,
-      title: 'Save these terms',
-      detail: termsSaved
-        ? 'Saved.'
-        : 'Effective date, payment and broker fee are stored against the submission before the signed copy can be attached to it.',
-    },
-    {
-      done: termsSaved,
-      title: 'Download the application and get it signed',
-      detail: 'Wet signature by the insured. You can close this and come back — the submission is saved and nothing is charged.',
-    },
-    {
-      done: uploaded,
-      title: 'Upload the signed copy',
-      detail: termsSaved ? 'Attach the signed PDF below.' : 'Available once the terms above are saved.',
-    },
-  ]
-
+/* A numbered step on the upload path that turns into a green tick once it
+   is done — the same mark the checklist used, now on the step itself. */
+function StepMark({ n, done, title, detail }) {
   return (
-    <div className="space-y-3">
-      {steps.map((st, i) => (
-        <div key={st.title} className="flex items-start gap-2.5">
-          <span
-            className="w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-[9px] font-bold"
-            style={st.done
-              ? { background: '#10B981', color: 'white' }
-              : { border: '1.5px solid #D1D5DB', color: '#9CA3AF' }}
-          >
-            {st.done ? '✓' : i + 1}
-          </span>
-          <span className="min-w-0">
-            <span className="block text-[12.5px] font-bold text-gray-800">{st.title}</span>
-            <span className="block text-[11.5px] text-gray-500 leading-relaxed">{st.detail}</span>
-          </span>
-        </div>
-      ))}
+    <div className="flex items-start gap-2.5 mb-3">
+      <span
+        className="w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-[9px] font-bold"
+        style={done
+          ? { background: '#10B981', color: 'white' }
+          : { border: '1.5px solid #D1D5DB', color: '#9CA3AF' }}
+      >
+        {done ? '✓' : n}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[12.5px] font-bold text-gray-800">{title}</span>
+        <span className="block text-[11.5px] text-gray-500 leading-relaxed">{detail}</span>
+      </span>
     </div>
   )
 }
@@ -314,16 +290,10 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
   const formatBytes = (n) => (!n ? '' : n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`)
   const complete = bindComplete(submission)
 
-  /* The upload path saves the terms first and only then accepts the signed
-     copy, so the button has three jobs depending on where you are. */
-  const primaryLabel = !isUpload
-    ? 'Sign and send to the insured'
-    : !data.termsSaved ? 'Continue to upload' : 'Submit signed application'
-
-  const onPrimary = () => {
-    if (isUpload && !data.termsSaved) { set({ termsSaved: true }); return }
-    onBound()
-  }
+  /* Both paths finish on this page: the signed copy is attached right in
+     the upload card, so there is no separate save-then-upload step. */
+  const primaryLabel = isUpload ? 'Submit signed application' : 'Sign and send to the insured'
+  const onPrimary = () => onBound()
 
   return (
     <div className="w-full">
@@ -467,21 +437,20 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
                   )}
 
                   {m.id === 'upload' && (
-                    <div className="space-y-4">
-                      <UploadChecklist termsSaved={!!data.termsSaved} uploaded={uploaded} />
-
-                      {data.termsSaved && (
-                        <>
-                          <div className="im-rule-brand pt-4">
-                            <p className="text-[12.5px] font-bold text-gray-800">Step 1 — download the application</p>
-                            <p className="text-[11.5px] text-gray-500 leading-relaxed mt-0.5 mb-3">
-                              Both the applicant and the agent have to sign it. Backdating is not permitted.
-                            </p>
+                    <div>
+                          <div>
+                            <StepMark
+                              n={1}
+                              done={!!data.downloaded}
+                              title="Download the application and get it signed"
+                              detail="Both the applicant and the agent sign it. Backdating is not permitted."
+                            />
                             {/* The app's download action — the gradient button and
                                 arrow the GL / BOP summary downloads with. */}
                             <button
                               type="button"
-                              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-semibold force-white-text transition hover:opacity-90"
+                              onClick={() => set({ downloaded: true })}
+                              className="ml-[26px] inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-semibold force-white-text transition hover:opacity-90"
                               style={{ background: BRAND_GRADIENT, color: 'white', boxShadow: '0 4px 14px rgba(92,46,212,0.25)' }}
                             >
                               Download binding application
@@ -491,9 +460,13 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
                             </button>
                           </div>
 
-                          <div className="im-rule-brand pt-4">
-                            <p className="text-[12.5px] font-bold text-gray-800">Step 2 — upload the signed copy</p>
-                            <p className="text-[11.5px] text-gray-500 mt-0.5 mb-3">PDF only, up to 10 MB each, 10 files at most.</p>
+                          <div className="im-rule-brand pt-4 mt-4">
+                            <StepMark
+                              n={2}
+                              done={uploaded}
+                              title="Upload the signed copy"
+                              detail="PDF only, up to 10 MB each, 10 files at most."
+                            />
 
                             {/* The GL / BOP upload's drop zone: dashed brand border,
                                 a paperclip tile, and "click to browse". */}
@@ -567,8 +540,6 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
                               <FieldError className="mt-2">Add the signed application to continue.</FieldError>
                             )}
                           </div>
-                        </>
-                      )}
                     </div>
                   )}
                 </ChoiceCard>
@@ -580,25 +551,13 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
           </div>
         </div>
 
-        {/* The upload path is not waiting on a decision, it is waiting on a
-            document — so it says so instead of offering a tick that changes
-            nothing. */}
-        {isUpload && data.termsSaved && !uploaded ? (
-          <div className="rounded-xl px-4 py-3.5 mt-8" style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)' }}>
-            <p className="text-[12.5px] font-bold" style={{ color: '#B45309' }}>Waiting for the signed application</p>
-            <p className="text-[11.5px] leading-relaxed mt-0.5" style={{ color: '#B45309' }}>
-              Terms and payment are saved. Attach the signed copy to bind. Nothing has been charged.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-8">
-            <Checkbox
-              label="As an agent, I agree that information entered in this application is correct to my knowledge."
-              checked={!!data.attested}
-              onChange={(v) => set({ attested: v })}
-            />
-          </div>
-        )}
+        <div className="mt-8">
+          <Checkbox
+            label="As an agent, I agree that information entered in this application is correct to my knowledge."
+            checked={!!data.attested}
+            onChange={(v) => set({ attested: v })}
+          />
+        </div>
 
         {/* Same footer shape as every other step: Back left, the action
             right, and the line that qualifies it above them. */}

@@ -1,4 +1,4 @@
-import { PriceTicker } from './primitives'
+import { CarrierLogo, PriceTicker } from './primitives'
 import {
   BRAND_GRADIENT, CARRIERS, ENHANCED_ITEMS, bindTotals, carrierById, classById, money, quoteFor,
 } from '../../data/inland'
@@ -107,16 +107,10 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
                 SELECTED
               </span>
 
-              {/* The carrier first, large and centred — the Commercial Auto /
-                  GL layout: a 96px logo tile with the name under it, rather
-                  than a thumbnail beside a line of small text. */}
+              {/* The carrier first, large and centred, as the Commercial
+                  Auto / GL rail shows its chosen carrier. */}
               <div className="flex flex-col items-center text-center">
-                <div
-                  className="im-carrier-tile rounded-xl flex items-center justify-center shrink-0"
-                  style={{ width: 96, height: 96, padding: 12 }}
-                >
-                  <img src={bindCarrier.logo} alt={bindCarrier.name} className="max-w-full max-h-full object-contain" />
-                </div>
+                <CarrierLogo carrier={bindCarrier} size={96} />
                 <p className="mt-3 text-base font-bold leading-tight text-gray-900">{bindCarrier.name}</p>
                 <p className="text-[11.5px] text-gray-400 mt-0.5">{bindCarrier.sub}</p>
               </div>
@@ -161,47 +155,41 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
                     : null
 
                   return (
+                    /* The logo at full strength whatever the answer — the
+                       chip already says no appetite, and fading the mark
+                       only made it harder to read. */
                     <div
                       key={c.id}
-                      className="rounded-xl px-3 py-2.5 flex items-center gap-2.5"
-                      style={{
-                        background: 'white',
-                        border: '1px solid #E5E7EB',
-                        opacity: inAppetite ? 1 : 0.6,
-                      }}
+                      className="rounded-xl px-3 py-3 flex items-center gap-3"
+                      style={{ background: 'white', border: '1.5px solid #E5E7EB' }}
                     >
-                      <div
-                        className="im-carrier-tile rounded-lg flex items-center justify-center shrink-0"
-                        style={{ width: 36, height: 36, padding: 3.5 }}
-                      >
-                        <img
-                          src={c.logo}
-                          alt=""
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
+                      {/* The Builder's Risk rail row: 40px mark, name and
+                          byline truncating beside it, the answer on the right. */}
+                      <CarrierLogo carrier={c} size={40} />
 
                       <div className="min-w-0 flex-1">
-                        <p className={`text-[12.5px] font-bold leading-tight ${inAppetite ? 'text-gray-800' : 'text-gray-400'}`}>
-                          {c.name}
-                        </p>
-                        <p className="text-[10.5px] text-gray-400 leading-tight">{c.sub}</p>
+                        <p className="text-[12px] font-semibold truncate text-gray-700">{c.name}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{c.sub}</p>
                       </div>
 
-                      {/* A carrier outside appetite is never going to return a
-                          price, so it says so instead of spinning. */}
-                      {!classItem ? null : !inAppetite ? (
-                        <span className="im-chip im-chip-muted shrink-0">No appetite</span>
-                      ) : outcome?.status === 'quoted' ? (
+                      {/* Once a carrier has answered, the row says exactly what
+                          its Compare card says — no appetite included, even
+                          with no class to check. Before that, appetite is all
+                          the rail knows: out of it says so, in it waits. */}
+                      {!outcome ? (
+                        !classItem ? null : !inAppetite ? (
+                          <span className="im-chip im-chip-muted shrink-0">No appetite</span>
+                        ) : (
+                          <PriceTicker isDark={isDark} />
+                        )
+                      ) : outcome.status === 'quoted' ? (
                         <span className="text-[13px] font-bold text-gray-900 shrink-0">
                           {money(premiumFor(outcome, formData))}
                         </span>
-                      ) : outcome ? (
+                      ) : (
                         <span className={`im-chip shrink-0 ${OUTCOME_CHIP[outcome.status]}`}>
                           {OUTCOME_LABEL[outcome.status]}
                         </span>
-                      ) : (
-                        <PriceTicker isDark={isDark} />
                       )}
                     </div>
                   )

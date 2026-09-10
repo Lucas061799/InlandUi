@@ -46,6 +46,22 @@ export function StepHeader({ title, subtitle }) {
   )
 }
 
+/* A carrier's logo on a square white tile — the Builder's Risk carrier
+   mark: white ground, light stroke, sm 40 / lg 56. The Inland marks are
+   wide wordmarks, so they fill the tile to a thin margin rather than the
+   65–70% Builder's Risk gives its logos. White in both themes (the marks are
+   dark ink); index.css only lightens the stroke in dark. */
+export function CarrierLogo({ carrier, size = 40, className = '' }) {
+  return (
+    <div
+      className={`im-carrier-tile rounded-xl flex items-center justify-center shrink-0 ${className}`}
+      style={{ width: size, height: size, padding: Math.round(size * 0.08) }}
+    >
+      <img src={carrier.logo} alt="" className="max-w-full max-h-full object-contain select-none" />
+    </div>
+  )
+}
+
 /* Uppercase label above a group of fields. */
 export function SectionLabel({ children, className = '' }) {
   return (

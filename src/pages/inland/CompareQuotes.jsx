@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Select } from '../../components/FormField'
 import {
-  BrandText, InfoLine, PillGroup, SectionLabel, StepHeader, StepNav, Tag,
+  BrandText, CarrierLogo, InfoLine, PillGroup, SectionLabel, StepHeader, StepNav, Tag,
 } from '../../components/inland/primitives'
 import {
   BRAND_GRADIENT, CARRIERS, DEDUCTIBLES, DEFAULT_DEDUCTIBLE, ENHANCED_DEFAULTS,
@@ -23,21 +23,10 @@ const STATUS_CHIP = {
   referred:      { className: 'im-chip-warn',  label: 'Referred' },
 }
 
-function CarrierMark({ carrier, size = 44 }) {
-  return (
-    <div
-      className="im-carrier-tile rounded-xl flex items-center justify-center shrink-0"
-      style={{ width: size, height: size, padding: 7 }}
-    >
-      <img src={carrier.logo} alt="" className="max-w-full max-h-full object-contain" />
-    </div>
-  )
-}
-
 function CardSkeleton() {
   return (
     <div className="rounded-2xl px-5 py-6 flex flex-col items-center gap-3" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-      <div className="im-skel w-11 h-11 rounded-xl" />
+      <div className="im-skel w-14 h-14 rounded-xl" />
       <div className="im-skel h-7 w-24 rounded" />
       <div className="im-skel h-3 w-20 rounded" />
       <div className="im-skel h-9 w-full rounded-xl mt-1" />
@@ -77,7 +66,7 @@ function OutcomeCard({ outcome, submission, selected, onSelect }) {
       }}
     >
       <div className="flex items-center gap-3 mb-4">
-        <CarrierMark carrier={carrier} />
+        <CarrierLogo carrier={carrier} size={56} />
         <div className="min-w-0">
           <p className={`text-[15px] font-bold leading-tight ${isQuoted ? 'text-gray-900' : 'text-gray-500'}`}>{carrier.name}</p>
           <p className="text-[11.5px] text-gray-400">{carrier.sub}</p>

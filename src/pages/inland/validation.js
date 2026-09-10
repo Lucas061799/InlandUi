@@ -209,11 +209,9 @@ export function bindComplete(submission = {}) {
     && (b.payment !== 'financing' || (b.financeAgreed && b.financeAcknowledged))
 
   if (b.signature === 'esign') return !!(termsReady && b.insuredEmail && b.attested)
-  if (b.signature === 'upload') {
-    /* Past the save, the only thing left is the document itself. */
-    if (b.termsSaved) return (b.files || []).length > 0
-    return !!(termsReady && b.attested)
-  }
+  /* The signed copy is attached on the same page, so upload is done when
+     the terms are, the agent has attested, and a file is there. */
+  if (b.signature === 'upload') return !!(termsReady && b.attested && (b.files || []).length > 0)
   return false
 }
 
