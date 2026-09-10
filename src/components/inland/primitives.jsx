@@ -10,6 +10,7 @@
 
 import { Children, useRef, useState } from 'react'
 import { useClickAway } from './useClickAway'
+import { usePrototypeMode } from './usePrototypeMode'
 import { BRAND_GRADIENT } from '../../data/inland'
 
 /* Gradient text — the app's accent for anything that reads as "brand". */
@@ -405,20 +406,21 @@ export function RemoveButton({ onClick, label = 'Remove' }) {
 
 /* Dashed "add another" action — the GL recipe: a magenta dashed outline
    with gradient text, full width. */
-export function AddAnother({ onClick, disabled = false, children }) {
+/* One look, the same one the GL / BOP pages use: a purple dashed row with
+   gradient text. There is deliberately no disabled variant — a greyed-out
+   dashed button reads as broken, so a caller that cannot offer another row
+   stops rendering this instead of dimming it. */
+export function AddAnother({ onClick, children }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      className={`add-another-btn w-full flex items-center justify-center gap-2 text-xs font-semibold border border-dashed rounded-xl px-4 py-3 transition ${
-        disabled ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-[#A614C3]/30'
-      }`}
+      className="add-another-btn w-full flex items-center justify-center gap-2 text-xs font-semibold border border-dashed border-[#A614C3]/30 rounded-xl px-4 py-3 transition"
     >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: disabled ? '#D1D5DB' : '#A614C3' }}>
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#A614C3' }}>
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
       </svg>
-      {disabled ? <span>{children}</span> : <span className="text-gradient">{children}</span>}
+      <span className="text-gradient">{children}</span>
     </button>
   )
 }
@@ -441,9 +443,29 @@ export function PrimaryButton({ children, onClick, disabled = false, className =
   )
 }
 
+/* Says out loud that the button is only open because prototype mode is on,
+   so a half-filled step is never mistaken for a finished one. */
+export function SkipBadge({ className = '' }) {
+  return (
+    <span
+      className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide align-middle ${className}`}
+      style={{ background: 'rgba(245,158,11,0.14)', color: '#B45309' }}
+    >
+      Prototype · skipping
+    </span>
+  )
+}
+
 /* Back + Continue, with the reason Continue is not available spelled out
-   next to it instead of only on the field that is missing. */
+   next to it instead of only on the field that is missing.
+
+   `canContinue` still arrives from the step's own completeness rules and is
+   still what the hint reports. Prototype mode does not change that answer —
+   it only lets the button through anyway, and says so. */
 export function StepNav({ onBack, onContinue, canContinue = true, hint, continueLabel = 'Continue' }) {
+  const [proto] = usePrototypeMode()
+  const skipping = proto && !canContinue
+
   return (
     /* Back on the left, forward on the right — the same footer shape as the
        GL / BOP review page. The empty span keeps Continue pinned right on
@@ -453,7 +475,11 @@ export function StepNav({ onBack, onContinue, canContinue = true, hint, continue
           and Continue it squeezed both and read as a label on the button
           rather than a note about the step. */}
       {hint && (
-        <p className={`text-xs mb-3 ${canContinue ? 'text-gray-400' : 'text-gray-500'}`}>{hint}</p>
+        <p className={`text-xs mb-3 ${canContinue ? 'text-gray-400' : 'text-gray-500'}`}>
+          {hint}
+          {/* Never let a skipped step look like a finished one. */}
+          {skipping && <SkipBadge />}
+        </p>
       )}
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -468,7 +494,7 @@ export function StepNav({ onBack, onContinue, canContinue = true, hint, continue
           </button>
         ) : <span />}
 
-        <PrimaryButton onClick={onContinue} disabled={!canContinue}>{continueLabel}</PrimaryButton>
+        <PrimaryButton onClick={onContinue} disabled={!canContinue && !proto}>{continueLabel}</PrimaryButton>
       </div>
     </div>
   )

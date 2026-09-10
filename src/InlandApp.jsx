@@ -19,6 +19,7 @@ import btisLogoDark from './assets/btislogo-dark.png'
 
 import InlandSidebar from './components/inland/InlandSidebar'
 import InlandRightRail from './components/inland/InlandRightRail'
+import { usePrototypeMode } from './components/inland/usePrototypeMode'
 
 import PageZero from './pages/inland/PageZero'
 import BusinessDetails from './pages/inland/BusinessDetails'
@@ -33,7 +34,8 @@ import { CARRIERS } from './data/inland'
 const SUBMISSION_NUMBER = 'QNI01123354'
 const TOTAL_STEPS = STEPS.length
 /* Continue on the step before the quotes is the one place the flow waits. */
-const LAST_FORM_STEP = stepIdFor('quotes') - 1
+const QUOTE_STEP = stepIdFor('quotes')
+const LAST_FORM_STEP = QUOTE_STEP - 1
 /* Carriers answer one at a time so the wait reads as three requests rather
    than one spinner. */
 const CARRIER_REPLY_MS = 550
@@ -78,7 +80,9 @@ export default function InlandApp() {
     if (step === LAST_FORM_STEP) {
       setQuoting(true)
       setAnsweredCarriers(0)
-      goToStep(6)
+      /* The quotes step, not a hardcoded 6 — that was Bind & Pay, so
+         Continue on Additional Interests jumped clean over Compare Quotes. */
+      goToStep(QUOTE_STEP)
       CARRIERS.forEach((_, i) => {
         setTimeout(() => setAnsweredCarriers(i + 1), (i + 1) * CARRIER_REPLY_MS)
       })
@@ -89,6 +93,35 @@ export default function InlandApp() {
   }, [step, goToStep])
 
   const handleBack = useCallback(() => goToStep(Math.max(step - 1, 1)), [step, goToStep])
+
+  /* Keyboard shortcuts, for building a prototype at typing speed.
+
+     ⌘/Ctrl + Enter is Continue — it obeys the same rule the button does, so
+     with prototype mode off it still refuses an unfinished step. ⌥⇧P turns
+     prototype mode on and off. Both stand down while you are in a field, so
+     ⌘Enter in a textarea is still the browser's. */
+  const [proto, , toggleProto] = usePrototypeMode()
+  useEffect(() => {
+    const onKey = (e) => {
+      const el = e.target
+      const typing = el instanceof HTMLElement
+        && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
+
+      if (e.altKey && e.shiftKey && (e.code === 'KeyP' || e.key.toLowerCase() === 'p')) {
+        e.preventDefault()
+        toggleProto()
+        return
+      }
+      if (typing) return
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault()
+        if (!started) return
+        if (proto || stepCompletion(formData)[step]) handleContinue()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [proto, toggleProto, started, step, formData, handleContinue])
 
   const startOver = useCallback(() => {
     setFormData({})
@@ -149,7 +182,8 @@ export default function InlandApp() {
         submission={formData}
         submissionNumber={SUBMISSION_NUMBER}
         onBack={handleBack}
-        onBound={() => set('bind')({ bound: true })}
+        /* Nothing binds here — the application goes out for signature. */
+        onBound={() => set('bind')({ sent: true })}
         onStartOver={startOver}
         showErrors={showErrors}
       />

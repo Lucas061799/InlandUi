@@ -5,7 +5,7 @@ import {
 } from '../../components/inland/primitives'
 import {
   BRAND_GRADIENT, CARRIERS, DEDUCTIBLES, DEFAULT_DEDUCTIBLE, ENHANCED_DEFAULTS,
-  ENHANCED_GROUPS, ENHANCED_ITEMS, carrierById, money, quoteFor, rerate,
+  ENHANCED_GROUPS, ENHANCED_ITEMS, bindTotals, carrierById, money, quoteFor, rerate,
 } from '../../data/inland'
 import { premiumFor, quoteState } from './validation'
 
@@ -47,7 +47,12 @@ function CardSkeleton() {
 
 /* One carrier's answer. A price when they have one, and the reason in their
    own words when they do not — an agent should never have to guess why a
-   carrier is missing from the list. */
+   carrier is missing from the list.
+
+   The headline is the total, not the premium: that is the number the bind
+   screen will charge, and a card that leads with the premium alone reads as
+   a cheaper quote than it is. The fees that make up the difference are
+   listed underneath rather than hidden behind it. */
 function OutcomeCard({ outcome, submission, selected, onSelect }) {
   const carrier = carrierById(outcome.carrierId)
   const quote = quoteFor(outcome.carrierId)
@@ -55,6 +60,9 @@ function OutcomeCard({ outcome, submission, selected, onSelect }) {
   const chip = STATUS_CHIP[outcome.status]
   const premium = premiumFor(outcome, submission)
   const changed = isQuoted && quote.enhanced && premium !== outcome.premium
+  const { lines, total } = isQuoted
+    ? bindTotals({ premium, quote, tria: submission.quotes?.tria })
+    : { lines: [], total: 0 }
 
   return (
     <div
@@ -85,45 +93,84 @@ function OutcomeCard({ outcome, submission, selected, onSelect }) {
 
       {isQuoted && (
         <>
-          {quote.badge && <div className="mb-2.5"><Tag tone="brand">{quote.badge}</Tag></div>}
-
+          <SectionLabel className="mb-1">Premium</SectionLabel>
           <div className="flex items-end gap-2">
-            <span className="text-[30px] font-bold leading-none text-gray-900">{money(premium)}</span>
-            <span className="text-[12px] text-gray-400 pb-1">annually</span>
+            <span className="text-[30px] font-bold leading-none text-gray-900">{money(total)}</span>
           </div>
-          <p className="text-[12px] text-gray-500 mt-1.5">{quote.commission}</p>
+          <p className="text-[12px] text-gray-400 mt-1">per year</p>
           {changed && (
             <p className="text-[11.5px] font-semibold mt-1.5">
               <BrandText>Re-rated from your enhanced limits — base was {money(outcome.premium)}</BrandText>
             </p>
           )}
 
-          <ul className="space-y-1.5 mt-4 mb-5">
-            {quote.bullets.map(b => (
-              <li key={b} className="flex items-start gap-2 text-[12.5px] text-gray-600">
-                <svg className="w-3.5 h-3.5 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 13l4 4L19 7" stroke="url(#imCheck)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <defs>
-                    <linearGradient id="imCheck" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#5C2ED4" /><stop offset="100%" stopColor="#A614C3" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                {b}
-              </li>
+          {/* What the headline is made of. */}
+          <div className="mt-4 im-rule pt-3">
+            {lines.map(l => (
+              <div key={l.id} className="flex items-baseline justify-between gap-4 py-1">
+                <span className="text-[12px] text-gray-500">{l.label}</span>
+                <span className="text-[12px] font-semibold text-gray-700">
+                  {l.note || money(l.value)}
+                </span>
+              </div>
             ))}
-          </ul>
+            <div className="flex items-baseline justify-between gap-4 py-1 mt-1 im-rule pt-2">
+              <span className="text-[12px] text-gray-500">Total</span>
+              <span className="text-[12.5px] font-bold text-gray-900">{money(total)}</span>
+            </div>
+          </div>
 
+          <span className="im-chip im-chip-good self-start mt-3.5">
+            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+            Bind online today
+          </span>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-gray-400 mt-2.5">
+            {quote.coveragesRated} coverages rated
+          </p>
+
+          {/* Two shapes of the same promise: the plain carriers state the
+              terms you are buying, Great American states how many of them
+              you can still move. */}
+          {quote.terms ? (
+            <div className="mt-4 im-rule pt-3.5">
+              <SectionLabel className="mb-1.5">Policy terms</SectionLabel>
+              <p className="text-[11.5px] text-gray-400">{quote.terms.line}</p>
+              <p className="text-[12.5px] font-bold text-gray-800 mt-0.5">{quote.terms.valuation}</p>
+              <p className="text-[11.5px] text-gray-500 leading-relaxed mt-1.5">{quote.terms.otherCauses}</p>
+              <p className="text-[11.5px] text-gray-500 mt-1">Coinsurance: {quote.terms.coinsurance}</p>
+            </div>
+          ) : (
+            <div className="rounded-xl px-4 py-3.5 mt-4" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+              <p className="text-[12.5px] font-bold text-gray-800">{ENHANCED_ITEMS.length} you can adjust</p>
+              <p className="text-[11.5px] text-gray-500 leading-relaxed mt-0.5">
+                Already in this price. Adjust the limits once you select.
+              </p>
+              <p className="text-[11.5px] text-gray-400 leading-relaxed mt-1.5">
+                {ENHANCED_ITEMS.slice(0, 3).map(i => i.label).join(', ')} and {ENHANCED_ITEMS.length - 3} more
+              </p>
+            </div>
+          )}
+
+          {/* mt-auto on the wrapper, not a fixed margin: the cards stretch to
+              the tallest in the row, so pushing the button to the bottom is
+              what lands all three on one line however much sits above them. */}
+          <div className="mt-auto pt-5">
           <button
             type="button"
             onClick={onSelect}
-            className={`mt-auto w-full h-10 inline-flex items-center justify-center rounded-xl text-[13px] font-bold transition-all ${selected ? '' : 'force-white-text'}`}
+            /* Selected is a class, not an inline style: the old inline
+               -webkit-text-fill-color pinned the label to #5C2ED4, which no
+               dark rule could reach, so on navy it read as unlit. */
+            className={`w-full h-10 inline-flex items-center justify-center rounded-xl text-[13px] font-bold transition-all ${selected ? 'im-select-on' : 'force-white-text'}`}
             style={selected
-              ? { background: 'linear-gradient(88.09deg, rgba(92,46,212,0.10) 0%, rgba(166,20,195,0.10) 100%)', border: '1.5px solid #7C3AED', color: '#5C2ED4', WebkitTextFillColor: '#5C2ED4' }
+              ? undefined
               : { background: BRAND_GRADIENT, color: 'white', boxShadow: '0 4px 16px rgba(92,46,212,0.25)' }}
           >
             {selected ? '✓ Selected' : quote.enhanced ? 'Select and adjust limits' : 'Select'}
           </button>
+          </div>
         </>
       )}
     </div>
@@ -187,7 +234,9 @@ function EnhancedPanel({ data, set, basePremium }) {
               >
                 <span className="flex items-center gap-2.5">
                   <span className="text-sm font-semibold text-gray-800">{group.title}</span>
-                  <span className="text-[11px] text-gray-400">{group.items.length}</span>
+                  {/* The count is a brand pill, not grey text beside the
+                      title — at 11px grey it read as part of the heading. */}
+                  <span className="im-count-pill">{group.items.length}</span>
                   {groupChanged > 0 && <Tag tone="brand">{groupChanged} changed</Tag>}
                 </span>
                 <svg
@@ -226,31 +275,35 @@ function EnhancedPanel({ data, set, basePremium }) {
         })}
       </div>
 
-      <div className="px-6 py-4 flex items-center gap-3 flex-wrap" style={{ background: '#F9FAFB' }}>
-        <button
-          type="button"
-          disabled={!dirty}
-          onClick={() => set({ enhanced: draft })}
-          className={`h-10 px-5 inline-flex items-center rounded-xl text-sm font-bold transition-all ${dirty ? 'force-white-text' : ''}`}
-          style={dirty
-            ? { background: BRAND_GRADIENT, color: 'white', boxShadow: '0 4px 16px rgba(92,46,212,0.25)' }
-            : { background: '#D1D5DB', color: 'white', cursor: 'not-allowed' }}
-        >
-          Re-rate with these limits
-        </button>
-        <button
-          type="button"
-          onClick={() => { setDraft(ENHANCED_DEFAULTS); set({ enhanced: {} }) }}
-          className="h-10 px-4 inline-flex items-center rounded-xl text-sm font-semibold transition-all"
-          style={{ background: 'white', border: '1.5px solid #E5E7EB', color: '#6B7280' }}
-        >
-          Reset to carrier defaults
-        </button>
+      {/* Note on the left, actions on the right with the primary furthest
+          out — the same footer order every step already ends on. */}
+      <div className="px-6 py-4 flex items-center justify-between gap-3 flex-wrap" style={{ background: '#F9FAFB' }}>
         <span className="text-[12px] text-gray-400">
           {dirty
             ? `Re-rating moves the premium to ${money(draftPremium)}.`
             : 'The price above already reflects your saved limits.'}
         </span>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => { setDraft(ENHANCED_DEFAULTS); set({ enhanced: {} }) }}
+            className="h-10 px-4 inline-flex items-center rounded-xl text-sm font-semibold transition-all"
+            style={{ background: 'white', border: '1.5px solid #E5E7EB', color: '#6B7280' }}
+          >
+            Reset to carrier defaults
+          </button>
+          <button
+            type="button"
+            disabled={!dirty}
+            onClick={() => set({ enhanced: draft })}
+            className={`h-10 px-5 inline-flex items-center rounded-xl text-sm font-bold transition-all ${dirty ? 'force-white-text' : ''}`}
+            style={dirty
+              ? { background: BRAND_GRADIENT, color: 'white', boxShadow: '0 4px 16px rgba(92,46,212,0.25)' }
+              : { background: '#D1D5DB', color: 'white', cursor: 'not-allowed' }}
+          >
+            Re-rate with these limits
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -327,6 +380,15 @@ export default function CompareQuotes({ data, set, submission, onBack, onContinu
             )
         ))}
       </div>
+
+      {/* Said once under the grid rather than on every card. */}
+      {!quoting && quoted.length > 0 && (
+        <div className="rounded-xl px-4 py-3 mt-5" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+          <p className="text-[11.5px] text-gray-500 leading-relaxed">
+            Every figure is indicative until the application is complete. The bound premium is confirmed before signature.
+          </p>
+        </div>
+      )}
 
       {!quoting && selectedId === 'GA' && (
         <div className="mt-7">

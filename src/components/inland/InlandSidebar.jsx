@@ -2,6 +2,7 @@ import sidebarBg from '../../assets/sidebar-bg.png'
 import norbieface from '../../assets/norbieface.png'
 import { BRAND_GRADIENT } from '../../data/inland'
 import { STEPS, stepCompletion } from '../../pages/inland/completion'
+import { usePrototypeMode } from './usePrototypeMode'
 
 const DARK_JUNGLE_OPACITY = 0.6
 
@@ -9,6 +10,7 @@ export default function InlandSidebar({
   activeStep, maxStep, formData, submissionNumber, isDark, onToggleDark, onStepClick,
 }) {
   const completion = stepCompletion(formData)
+  const [proto, , toggleProto] = usePrototypeMode()
 
   return (
     <aside
@@ -148,6 +150,39 @@ export default function InlandSidebar({
           </div>
           <span style={{ fontSize: '14.5px', fontWeight: 400, color: isDark ? '#F9FAFB' : '#6B7280', WebkitTextFillColor: isDark ? '#F9FAFB' : '#6B7280' }}>
             Dark Mode
+          </span>
+        </button>
+
+        {/* Prototype mode. Same switch as dark mode so it is obviously a
+            setting rather than part of the submission, in the app's amber —
+            the hue this flow already uses for "an underwriter should look". */}
+        <button
+          onClick={toggleProto}
+          role="switch"
+          aria-checked={proto}
+          aria-label="Prototype mode — skip required fields"
+          title="Skip required fields while prototyping (⌥⇧P)"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all mt-2"
+          style={{
+            background: proto
+              ? 'rgba(245,158,11,0.14)'
+              : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)',
+            border: proto
+              ? '1.5px solid rgba(245,158,11,0.45)'
+              : isDark ? '1.5px solid transparent' : '1.5px solid #E5E7EB',
+          }}
+        >
+          <div className="w-10 h-5 rounded-full relative transition-all shrink-0" style={{ background: proto ? '#F59E0B' : '#D1D5DB' }}>
+            <div
+              className="absolute top-0.5 w-4 h-4 rounded-full shadow transition-all"
+              style={{ left: proto ? '22px' : '2px', background: 'white' }}
+            />
+          </div>
+          <span className="min-w-0 text-left" style={{ fontSize: '14.5px', fontWeight: 400, color: isDark ? '#F9FAFB' : '#6B7280', WebkitTextFillColor: isDark ? '#F9FAFB' : '#6B7280' }}>
+            Prototype Mode
+            <span className="block text-[11px]" style={{ color: '#9CA3AF', WebkitTextFillColor: '#9CA3AF' }}>
+              Skip required fields · ⌥⇧P
+            </span>
           </span>
         </button>
       </div>

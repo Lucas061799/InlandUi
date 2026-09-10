@@ -386,24 +386,48 @@ export const DEFAULT_DEDUCTIBLE = 2500
    the carriers differ on appetite, not on this. */
 const DEDUCTIBLE_FACTOR = { 1000: 1.15, 2500: 1, 5000: 0.92, 10000: 0.85, 25000: 0.76 }
 
+/* A carrier's answer is a premium plus the fees that ride with it, and the
+   policy terms the premium buys. The card adds them up rather than showing a
+   number the bind screen would then contradict. */
 export const QUOTES = [
   {
     carrierId: 'LEV',
     premium: 890,
+    serviceFee: 160,
+    inspectionFee: 10,
     commission: '15% commission',
+    coveragesRated: 1,
     bullets: ['Non-admitted paper', 'Broad theft terms', 'Agency bill'],
+    terms: {
+      line: 'Scheduled Equipment',
+      valuation: 'Replacement Cost or Actual Cash Value',
+      otherCauses: 'All other causes of loss: 1% of the amount of insurance on the item(s) lost or damaged, but not less than $500',
+      coinsurance: '80%',
+    },
   },
   {
     carrierId: 'NAV',
     premium: 675,
+    serviceFee: 100,
+    inspectionFee: 0,
     commission: '15% commission',
+    coveragesRated: 1,
     bullets: ['BTIS proprietary carrier', 'Admitted paper', 'Agency bill'],
+    terms: {
+      line: 'Scheduled Equipment',
+      valuation: 'Actual Cash Value',
+      otherCauses: 'All other causes of loss: 1% of the amount of insurance on the item(s) lost or damaged, but not less than $1,000',
+      coinsurance: '80%',
+    },
   },
   {
     carrierId: 'GA',
     premium: 1075,
+    serviceFee: 250,
+    inspectionFee: 0,
     commission: '15% commission',
     badge: 'Enhanced coverage',
+    coveragesRated: ENHANCED_ITEMS.length + 6,
     bullets: [`${ENHANCED_ITEMS.length} enhanced coverages built in`, 'Admitted paper', 'Agency bill'],
     enhanced: true,
   },
@@ -468,10 +492,63 @@ export function rerate(basePremium, selections = {}) {
 
 /* ── Step 7: payment ──────────────────────────────────────────────────── */
 
-export const PAYMENT_PLANS = [
-  { id: 'full',   label: 'Pay in full',  detail: 'One payment, no instalment fee', factor: 1,    fee: 0 },
-  { id: 'four',   label: '4 payments',   detail: '25% down, then 3 monthly',       factor: 0.25, fee: 6 },
-  { id: 'ten',    label: '10 payments',  detail: '20% down, then 9 monthly',       factor: 0.20, fee: 6 },
+/* ── Step 7: bind ─────────────────────────────────────────────────────── */
+
+export const PAYMENT_METHODS = [
+  { id: 'financing', label: 'Paperless Premium Financing', detail: 'Down payment with 10 instalments.' },
+  { id: 'agency',    label: 'Agency Bill',                 detail: 'The Agency bills the insured and collects premium.' },
 ]
 
+export const SIGNATURE_METHODS = [
+  {
+    id: 'esign',
+    label: 'eSign',
+    detail: 'You sign now, then we email the insured their signature request. The policy binds as soon as they sign.',
+  },
+  {
+    id: 'upload',
+    label: 'Upload signed application',
+    detail: 'Collect a wet signature and upload the signed application. We check both signatures before binding, and the submission stays bind-incomplete until it lands.',
+  },
+]
+
+/* A broker fee is fully earned, so there is a ceiling on it. */
+export const MAX_BROKER_FEE = 1000
+
+/* Finance terms: 40% down, the balance plus the finance charge over ten. */
+const FINANCE = { downRate: 0.4, instalments: 10, chargeRate: 0.1277 }
+
+export function financeSchedule(total) {
+  const down = Math.round(total * FINANCE.downRate * 100) / 100
+  const financed = (total - down) * (1 + FINANCE.chargeRate)
+  return {
+    down,
+    instalments: FINANCE.instalments,
+    each: Math.round((financed / FINANCE.instalments) * 100) / 100,
+  }
+}
+
+/* Everything that lands on the invoice, in the order the bind card lists it.
+   One function so the quote card, the bind card and the confirmation cannot
+   drift apart on what the total is. */
+export function bindTotals({ premium = 0, quote, brokerFee = 0, tria } = {}) {
+  const lines = [
+    { id: 'premium', label: 'Premium', value: premium },
+    { id: 'service', label: 'BTIS service fee', value: quote?.serviceFee || 0 },
+  ]
+  if (quote?.inspectionFee) lines.push({ id: 'inspection', label: 'Inspection fee', value: quote.inspectionFee })
+  if (brokerFee > 0) lines.push({ id: 'broker', label: 'Broker fee', value: brokerFee })
+  /* Great American writes terrorism into the form, so it is a line that
+     costs nothing rather than a surcharge. */
+  if (quote?.enhanced && tria === 'include') {
+    lines.push({ id: 'terrorism', label: 'Terrorism', value: null, note: 'Included' })
+  }
+  const total = lines.reduce((sum, l) => sum + (l.value || 0), 0)
+  return { lines, total }
+}
+
 export const money = (n) => '$' + Math.round(Number(n) || 0).toLocaleString()
+
+/* The instalment figures are the one place cents matter. */
+export const money2 = (n) =>
+  '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })

@@ -6,7 +6,7 @@ import {
 import {
   INTEREST_COVERAGE_TYPES, INTEREST_TYPES, LOSS_PAYEE_TYPES, US_STATES,
 } from '../../data/inland'
-import { MAX_INTERESTS, interestValid, interestsComplete } from './validation'
+import { MAX_INTERESTS, interestsComplete } from './validation'
 
 const blank = () => ({
   type: '', lossPayeeType: '', coverage: '', name: '', loanNumber: '',
@@ -102,7 +102,6 @@ function InterestBlock({ index, value, total, onChange, onRemove, showErrors }) 
 export default function AdditionalInterests({ data, set, onBack, onContinue, showErrors }) {
   const list = data.interests || []
   const complete = interestsComplete(data)
-  const allValid = list.every(interestValid)
 
   const setList = (next) => set({ interests: next })
   const answerYes = () => set({ hasInterests: 'yes', interests: list.length ? list : [blank()] })
@@ -136,7 +135,7 @@ export default function AdditionalInterests({ data, set, onBack, onContinue, sho
 
                 {list.length < MAX_INTERESTS && (
                   <div className="mt-5">
-                    <AddAnother onClick={() => setList([...list, blank()])} disabled={!allValid}>
+                    <AddAnother onClick={() => setList([...list, blank()])}>
                       Add another interest
                     </AddAnother>
                   </div>

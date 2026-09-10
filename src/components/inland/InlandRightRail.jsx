@@ -1,5 +1,7 @@
 import { PriceTicker } from './primitives'
-import { BRAND_GRADIENT, CARRIERS, ENHANCED_ITEMS, classById, money } from '../../data/inland'
+import {
+  BRAND_GRADIENT, CARRIERS, ENHANCED_ITEMS, bindTotals, carrierById, classById, money, quoteFor,
+} from '../../data/inland'
 import { STEPS, completedCount, stepCompletion, stepIdFor } from '../../pages/inland/completion'
 import { premiumFor, quoteState } from '../../pages/inland/validation'
 
@@ -28,6 +30,23 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
   const classItem = formData.classCode?.classId ? classById(formData.classCode.classId) : null
   /* Prices only exist once the submission has gone out, so up to then the
      card answers the question it can: who is even in appetite. */
+  /* Once a carrier is chosen the list has done its job, so from the bind
+     step the rail carries the figures that are about to bind rather than the
+     two quotes the agent did not take. */
+  const bindOutcome = activeStep >= BIND_STEP
+    ? quoteState(formData).quoted.find(o => o.carrierId === formData.quotes?.selectedCarrier)
+    : null
+  const bindCarrier = bindOutcome ? carrierById(bindOutcome.carrierId) : null
+  const bindFigures = bindOutcome
+    ? bindTotals({
+        premium: premiumFor(bindOutcome, formData),
+        quote: quoteFor(bindOutcome.carrierId),
+        brokerFee: Math.min(Number(formData.bind?.brokerFee) || 0, 1000),
+        tria: formData.quotes?.tria,
+      })
+    : null
+  const bindEffective = formData.bind?.effectiveDate || formData.business?.effectiveDate || '—'
+
   const showOutcomes = activeStep >= QUOTE_STEP
   const outcomes = showOutcomes ? quoteState(formData).outcomes : []
 
@@ -67,18 +86,65 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
 
         <div className="mb-5" style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#F3F4F6'}` }} />
 
-        {classItem && (
-          <>
-            <div className="mb-3">
-              {quoting && (
-                <p className="text-[11.5px] text-gray-400 mb-2.5 leading-relaxed">
-                  Getting prices… {answered} of {CARRIERS.length} answered.
-                </p>
-              )}
+        {/* Always on. Who is on the panel is true from the first screen —
+            only what they have to say about this risk changes — so gating
+            the whole list on the class code emptied the rail for no reason. */}
+        {bindCarrier ? (
+          <div className="mb-3">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-2.5">
+              What binds
+            </div>
+
+            <div
+              className="rounded-xl px-3 py-2.5 flex items-center gap-2.5"
+              style={{ background: 'white', border: '1px solid #E5E7EB' }}
+            >
+              <div
+                className="im-carrier-tile rounded-lg flex items-center justify-center shrink-0"
+                style={{ width: 36, height: 36, padding: 3.5 }}
+              >
+                <img src={bindCarrier.logo} alt="" className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[12.5px] font-bold leading-tight text-gray-800">{bindCarrier.name}</p>
+                <p className="text-[10.5px] text-gray-400 leading-tight">{bindCarrier.sub}</p>
+              </div>
+            </div>
+
+            <div className="im-figures rounded-xl px-3.5 py-3 mt-2">
+              <div className="flex items-baseline justify-between gap-3 py-1">
+                <span className="text-[11.5px] text-gray-500">Effective</span>
+                <span className="text-[11.5px] font-semibold text-gray-800">{bindEffective}</span>
+              </div>
+              {bindFigures.lines.map(l => (
+                <div key={l.id} className="flex items-baseline justify-between gap-3 py-1">
+                  <span className="text-[11.5px] text-gray-500">{l.label}</span>
+                  <span className="text-[11.5px] font-semibold text-gray-800">{l.note || money(l.value)}</span>
+                </div>
+              ))}
+              <div className="im-figures-rule flex items-baseline justify-between gap-3 pt-2.5 mt-1.5">
+                <span className="text-[12px] font-bold text-gray-800">Total</span>
+                <span className="im-figures-total text-[18px] font-bold leading-none">{money(bindFigures.total)}</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+        <div className="mb-3">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400 mb-2.5">
+            Who can quote this
+          </div>
+
+          {quoting && (
+            <p className="text-[11.5px] text-gray-400 mb-2.5 leading-relaxed">
+              Getting prices… {answered} of {CARRIERS.length} answered.
+            </p>
+          )}
 
               <div className="space-y-2">
                 {CARRIERS.map((c, i) => {
-                  const inAppetite = classItem.carriers.includes(c.id)
+                  /* Before a class is picked nothing is out of appetite yet —
+                     the row names the carrier and claims nothing else. */
+                  const inAppetite = !classItem || classItem.carriers.includes(c.id)
                   const outcome = showOutcomes && !(quoting && i >= answered)
                     ? outcomes.find(o => o.carrierId === c.id)
                     : null
@@ -113,7 +179,7 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
 
                       {/* A carrier outside appetite is never going to return a
                           price, so it says so instead of spinning. */}
-                      {!inAppetite ? (
+                      {!classItem ? null : !inAppetite ? (
                         <span className="im-chip im-chip-muted shrink-0">No appetite</span>
                       ) : outcome?.status === 'quoted' ? (
                         <span className="text-[13px] font-bold text-gray-900 shrink-0">
@@ -130,8 +196,7 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
                   )
                 })}
               </div>
-            </div>
-          </>
+        </div>
         )}
 
         {/* Straight from the GL rail: the application download, disabled until

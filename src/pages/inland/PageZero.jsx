@@ -7,6 +7,7 @@ import jungleImg from '../../assets/jungle.png'
 import { Textarea } from '../../components/FormField'
 import ClassSearch from '../../components/inland/ClassSearch'
 import { BrandText } from '../../components/inland/primitives'
+import { usePrototypeMode } from '../../components/inland/usePrototypeMode'
 import { BRAND_GRADIENT, classById } from '../../data/inland'
 import { MIN_DESCRIPTION_WORDS, countWords } from './validation'
 
@@ -20,6 +21,10 @@ export default function PageZero({ onStart, initialClassId, initialDescription }
   const words = countWords(description)
   const enoughWords = words >= MIN_DESCRIPTION_WORDS
   const ready = !!classId && enoughWords
+  /* The first gate in the flow, so it honours prototype mode too — otherwise
+     you cannot even reach the steps the flag exists to move through. */
+  const [proto] = usePrototypeMode()
+  const unlocked = ready || proto
 
   return (
     <div className="min-h-screen bg-white font-montserrat flex flex-col">
@@ -93,13 +98,13 @@ export default function PageZero({ onStart, initialClassId, initialDescription }
 
               <button
                 type="button"
-                onClick={() => ready && onStart({ classId, description })}
-                disabled={!ready}
-                className={`w-full h-14 flex items-center justify-center rounded-xl text-base font-bold transition ${ready ? 'force-white-text hover:opacity-90' : 'cursor-not-allowed'}`}
+                onClick={() => unlocked && onStart({ classId, description })}
+                disabled={!unlocked}
+                className={`w-full h-14 flex items-center justify-center rounded-xl text-base font-bold transition ${unlocked ? 'force-white-text hover:opacity-90' : 'cursor-not-allowed'}`}
                 style={{
-                  background: ready ? BRAND_GRADIENT : '#D1D5DB',
+                  background: unlocked ? BRAND_GRADIENT : '#D1D5DB',
                   color: 'white',
-                  boxShadow: ready ? '0 4px 14px rgba(92,46,212,0.22)' : 'none',
+                  boxShadow: unlocked ? '0 4px 14px rgba(92,46,212,0.22)' : 'none',
                 }}
               >
                 Start application

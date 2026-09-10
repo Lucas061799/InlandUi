@@ -153,14 +153,13 @@ export default function Underwriting({ data, set, submission, onBack, onContinue
                     showErrors={showErrors && !lossComplete(loss)}
                   />
                 ))}
-                <div className="mt-4">
-                  <AddAnother
-                    onClick={() => setLosses([...losses, blankLoss()])}
-                    disabled={losses.length >= MAX_LOSSES}
-                  >
-                    Add another loss
-                  </AddAnother>
-                </div>
+                {losses.length < MAX_LOSSES && (
+                  <div className="mt-4">
+                    <AddAnother onClick={() => setLosses([...losses, blankLoss()])}>
+                      Add another loss
+                    </AddAnother>
+                  </div>
+                )}
               </div>
             )}
           </QuestionRow>

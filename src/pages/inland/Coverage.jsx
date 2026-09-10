@@ -91,9 +91,11 @@ function ScheduleItems({ items = [], onChange, showErrors }) {
         )
       })}
 
-      <AddAnother onClick={() => onChange([...rows, blankItem()])} disabled={rows.length >= MAX_SCHEDULE_ITEMS}>
-        Add another item
-      </AddAnother>
+      {rows.length < MAX_SCHEDULE_ITEMS && (
+        <AddAnother onClick={() => onChange([...rows, blankItem()])}>
+          Add another item
+        </AddAnother>
+      )}
 
       <p className={`text-[12.5px] ${overTotal ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
         Scheduled total <span className="font-bold">{money(total)}</span> of {money(SCHEDULE_TOTAL_MAX)}

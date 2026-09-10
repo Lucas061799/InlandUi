@@ -277,6 +277,9 @@ input, select, textarea, button {
 [data-dark="true"] .im-chip-muted { background: rgba(255,255,255,0.08) !important; color: #9CA3AF !important; }
 [data-dark="true"] .im-chip-warn  { background: rgba(245,158,11,0.18) !important; color: #FCD34D !important; }
 [data-dark="true"] .im-chip-stop  { background: rgba(239,68,68,0.18) !important; color: #FCA5A5 !important; }
+/* The one green in the app: a carrier that can be bound online right now. */
+.im-chip-good  { background: rgba(16,185,129,0.12); color: #047857; }
+[data-dark="true"] .im-chip-good  { background: rgba(16,185,129,0.20) !important; color: #6EE7B7 !important; }
 
 .im-note-warn { color: #B45309; }
 [data-dark="true"] .im-note-warn { color: #FCD34D !important; }
@@ -516,6 +519,63 @@ button.force-white-text,
   background: linear-gradient(88.09deg, rgba(92,46,212,0.08) 0.11%, rgba(166,20,195,0.08) 63.8%);
 }
 
+
+/* A carrier card's chosen state: the brand tint behind a brand-coloured
+   label, ringed. Light and dark carry their own values because a single
+   purple cannot be legible on both white and navy. */
+.im-select-on {
+  background: linear-gradient(88.09deg, rgba(92,46,212,0.10) 0%, rgba(166,20,195,0.10) 100%);
+  border: 1.5px solid #7C3AED;
+  color: #5C2ED4;
+  -webkit-text-fill-color: #5C2ED4;
+}
+[data-dark="true"] .bop-page .im-select-on,
+[data-dark="true"] .im-select-on {
+  background: linear-gradient(88.09deg, rgba(167,139,250,0.20) 0%, rgba(232,121,249,0.20) 100%) !important;
+  border-color: rgba(216,180,254,0.75) !important;
+  color: #E9D5FF !important;
+  -webkit-text-fill-color: #E9D5FF !important;
+}
+
+/* The bind figures in the rail. Brand-tinted rather than the usual grey
+   card: it is the number the whole step is about, and on a grey panel among
+   grey panels it stopped registering. */
+.im-figures {
+  background: rgba(92,46,212,0.05);
+  border: 1px solid rgba(92,46,212,0.18);
+}
+.im-figures-rule { border-top: 1px solid rgba(92,46,212,0.18); }
+.im-figures-total { color: #5C2ED4; }
+[data-dark="true"] .bop-page .im-figures,
+[data-dark="true"] .im-figures {
+  background: rgba(167,139,250,0.12) !important;
+  border-color: rgba(167,139,250,0.30) !important;
+}
+[data-dark="true"] .bop-page .im-figures-rule,
+[data-dark="true"] .im-figures-rule { border-top-color: rgba(167,139,250,0.30) !important; }
+[data-dark="true"] .im-figures-total { color: #C4B5FD !important; }
+
+/* Count pill — the number of items inside a collapsed group. Same tint the
+   sidebar step badge uses: the gradient at 12% with brand-purple text, not a
+   solid fill, so a count beside a heading stays a count. Its own class so
+   the min-width keeps a single digit round rather than a squashed oval. */
+.im-count-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 9999px; font-size: 11px; font-weight: 700; line-height: 1;
+  background: linear-gradient(88.09deg, rgba(92,46,212,0.12) 0%, rgba(166,20,195,0.12) 100%);
+  color: #5C2ED4;
+}
+/* Dark keeps the same character as light — a tint, not a solid. The
+   sidebar's done badge goes 70% because it marks progress; a count beside a
+   heading should stay quiet, so it takes the light purples at low alpha. */
+[data-dark="true"] .bop-page .im-count-pill,
+[data-dark="true"] .im-count-pill {
+  background: linear-gradient(88.09deg, rgba(167,139,250,0.22) 0%, rgba(232,121,249,0.22) 100%) !important;
+  color: #E9D5FF !important;
+  -webkit-text-fill-color: #E9D5FF !important;
+}
+
 /* Gradient border pill */
 .badge-gradient {
   background: linear-gradient(88.09deg, #5C2ED4 0.11%, #A614C3 63.8%);
@@ -632,7 +692,9 @@ button.force-white-text,
   color: #FFFFFF !important;
 }
 
-/* "Add another" dashed button */
+/* "Add another" dashed button. Scoped through .bop-page so it outranks the
+   blanket dark border rule, which was flattening the purple dash to grey. */
+[data-dark="true"] .bop-page .add-another-btn,
 [data-dark="true"] .add-another-btn {
   border-color: rgba(166,20,195,0.55) !important;
   color: #E879F9 !important;

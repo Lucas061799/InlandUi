@@ -196,13 +196,29 @@ export function quotesComplete(submission = {}) {
 
 /* ── 7. Bind ──────────────────────────────────────────────────────────── */
 
+/* What the bind screen needs before its button opens. The upload path asks
+   twice — once to save the terms, then again for the signed copy — so what
+   counts as complete depends on which half you are in. */
 export function bindComplete(submission = {}) {
   if (quoteState(submission).terminal) return true
   const b = submission.bind || {}
-  return !!(b.paymentPlan && b.signature && b.attested)
+  const business = submission.business || {}
+
+  const termsReady = !!(b.effectiveDate || business.effectiveDate)
+    && !!b.payment
+    && (b.payment !== 'financing' || (b.financeAgreed && b.financeAcknowledged))
+
+  if (b.signature === 'esign') return !!(termsReady && b.insuredEmail && b.attested)
+  if (b.signature === 'upload') {
+    /* Past the save, the only thing left is the document itself. */
+    if (b.termsSaved) return (b.files || []).length > 0
+    return !!(termsReady && b.attested)
+  }
+  return false
 }
 
-/* The submission has left the agent's hands — bound, or with an underwriter. */
+/* The submission has left the agent's hands — out for signature, or with an
+   underwriter. */
 export function submissionSettled(submission = {}) {
-  return !!quoteState(submission).terminal || !!submission.bind?.bound
+  return !!quoteState(submission).terminal || !!submission.bind?.sent
 }
