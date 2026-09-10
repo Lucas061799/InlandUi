@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Checkbox, DateInput, FormGrid, Select, Textarea } from '../../components/FormField'
 import {
-  AddAnother, FieldError, MoneyInput, QuestionRow, RemoveButton, SectionLabel, StepHeader, StepNav, YesNo,
+  AddAnother, FieldError, MoneyInput, QuestionCard, QuestionRow, RemoveButton, SectionLabel, StepHeader, StepNav, YesNo,
 } from '../../components/inland/primitives'
 import {
   ACTIVITY_RISKS, CANCEL_REASONS, OPERATOR_TRAINING, UW_QUESTIONS, operatorTrainingDefault,
@@ -82,17 +82,24 @@ function LossBlock({ index, loss, total, onChange, onRemove, showErrors }) {
   )
 }
 
-export default function Underwriting({ data, set, submission, onBack, onContinue, showErrors }) {
+export default function Underwriting({ data, set, submission, onBack, onContinue, showErrors, hideNav = false }) {
   const experience = submission?.business?.industryExperience
   const complete = underwritingComplete(data)
   const losses = data.lossList?.length ? data.lossList : [blankLoss()]
+  const answered = (v) => v === 'yes' || v === 'no'
+  const activitiesError = showErrors && (!answered(data.activities)
+    || (data.activities === 'yes' && !(data.activityList || []).length))
+  const rentsOutError = showErrors && (!answered(data.rentsOut) || !data.operatorTraining)
 
-  /* The training answer already exists on step 2 as industry experience.
-     Seed it rather than asking the same thing twice. */
+  /* Operator training follows the industry experience answered in Business
+     Details until the agent picks it themselves. It used to be seeded once on
+     mount, which only held while Business Details was always filled first —
+     on the long page every section mounts together, so it has to keep up. */
   useEffect(() => {
-    if (!data.operatorTraining) set({ operatorTraining: operatorTrainingDefault(experience) })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (data.operatorTrainingTouched) return
+    const seeded = operatorTrainingDefault(experience)
+    if (data.operatorTraining !== seeded) set({ operatorTraining: seeded })
+  }, [experience, data.operatorTraining, data.operatorTrainingTouched, set])
 
   const setLosses = (list) => set({ lossList: list })
 
@@ -100,9 +107,10 @@ export default function Underwriting({ data, set, submission, onBack, onContinue
     <div className="w-full">
       <StepHeader title="Underwriting Questions" />
 
-      {/* The three questions that open a follow-up. */}
-      <div>
-        {FOLLOW_UP_QUESTIONS.map((q, i) => (
+      {/* The three questions that open a follow-up, then the two that need
+          room of their own — one card each, as GL lays out its questions. */}
+      <div className="space-y-3">
+        {FOLLOW_UP_QUESTIONS.map((q) => (
           <QuestionRow
             key={q.id}
             label={q.label}
@@ -110,7 +118,6 @@ export default function Underwriting({ data, set, submission, onBack, onContinue
             value={data[q.id]}
             onChange={(v) => set({ [q.id]: v })}
             error={showErrors && data[q.id] !== 'yes' && data[q.id] !== 'no'}
-            last={i === FOLLOW_UP_QUESTIONS.length - 1}
           >
             {q.followUp === 'cancelled' && data.cancelled === 'yes' && (
               <div className="space-y-4">
@@ -164,12 +171,11 @@ export default function Underwriting({ data, set, submission, onBack, onContinue
             )}
           </QuestionRow>
         ))}
-      </div>
 
       {/* Its own card: the list is long enough that nesting it inside a
           question row buries every question under it. */}
-      <div className="py-5 border-b border-gray-100">
-        <p className="text-sm text-gray-800 leading-relaxed mb-1">{ACTIVITIES_QUESTION.label}</p>
+      <QuestionCard error={activitiesError}>
+        <p className={`text-sm leading-relaxed mb-1 ${activitiesError ? 'text-red-500' : 'text-gray-800'}`}>{ACTIVITIES_QUESTION.label}</p>
         <p className="text-[12px] text-gray-400 mb-3">Tick everything that applies. Any of these needs an underwriter to look at the risk.</p>
         <YesNo value={data.activities} onChange={(v) => set({ activities: v })} name={ACTIVITIES_QUESTION.label} />
         <ActivityGrid
@@ -180,21 +186,21 @@ export default function Underwriting({ data, set, submission, onBack, onContinue
         {showErrors && data.activities === 'yes' && (data.activityList || []).length === 0 && (
           <FieldError className="mt-3">Tick at least one activity, or answer no.</FieldError>
         )}
-      </div>
+      </QuestionCard>
 
       {/* The rent-out answer and the training records behind it. */}
-      <div className="py-5">
-        <p className="text-sm text-gray-800 leading-relaxed mb-1">{RENTS_OUT_QUESTION.label}</p>
+      <QuestionCard error={rentsOutError}>
+        <p className={`text-sm leading-relaxed mb-1 ${rentsOutError ? 'text-red-500' : 'text-gray-800'}`}>{RENTS_OUT_QUESTION.label}</p>
         <p className="text-[12px] text-gray-400 mb-3">{RENTS_OUT_QUESTION.help}</p>
         <YesNo value={data.rentsOut} onChange={(v) => set({ rentsOut: v })} name={RENTS_OUT_QUESTION.label} />
 
-        <div className="sm:max-w-md mt-5 pt-5 border-t border-gray-100">
+        <div className="sm:max-w-md mt-5 pt-5 im-rule">
           <Select
             label="Operator training and experience"
             required
             options={OPERATOR_TRAINING}
             value={data.operatorTraining}
-            onChange={(v) => set({ operatorTraining: v })}
+            onChange={(v) => set({ operatorTraining: v, operatorTrainingTouched: true })}
             placeholder="Select"
             error={showErrors && !data.operatorTraining}
           />
@@ -204,8 +210,11 @@ export default function Underwriting({ data, set, submission, onBack, onContinue
               : 'Change it if the training records are incomplete.'}
           </p>
         </div>
+      </QuestionCard>
       </div>
 
+      {/* On the long page one Get quotes closes all four sections. */}
+      {!hideNav && (
       <div className="mt-7">
         <StepNav
           onBack={onBack}
@@ -214,6 +223,7 @@ export default function Underwriting({ data, set, submission, onBack, onContinue
           hint={complete ? undefined : 'Every question needs an answer'}
         />
       </div>
+      )}
     </div>
   )
 }

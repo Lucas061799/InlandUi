@@ -97,21 +97,31 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
 
             {/* One card, one stroke: who is binding and what it costs are the
                 same fact, so they sit inside the same outline. */}
-            <div className="im-figures rounded-xl px-3.5 py-3">
-              <div className="flex items-center gap-2.5">
+            <div className="im-figures rounded-2xl px-4 pt-5 pb-3 relative">
+              {/* SELECTED on the corner, as the GL / BOP rail marks its chosen
+                  carrier. No shadow — the card's stroke stays flat. */}
+              <span
+                className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider text-white"
+                style={{ background: BRAND_GRADIENT }}
+              >
+                SELECTED
+              </span>
+
+              {/* The carrier first, large and centred — the Commercial Auto /
+                  GL layout: a 96px logo tile with the name under it, rather
+                  than a thumbnail beside a line of small text. */}
+              <div className="flex flex-col items-center text-center">
                 <div
-                  className="im-carrier-tile rounded-lg flex items-center justify-center shrink-0"
-                  style={{ width: 36, height: 36, padding: 3.5 }}
+                  className="im-carrier-tile rounded-xl flex items-center justify-center shrink-0"
+                  style={{ width: 96, height: 96, padding: 12 }}
                 >
-                  <img src={bindCarrier.logo} alt="" className="max-w-full max-h-full object-contain" />
+                  <img src={bindCarrier.logo} alt={bindCarrier.name} className="max-w-full max-h-full object-contain" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12.5px] font-bold leading-tight text-gray-800">{bindCarrier.name}</p>
-                  <p className="text-[10.5px] text-gray-400 leading-tight">{bindCarrier.sub}</p>
-                </div>
+                <p className="mt-3 text-base font-bold leading-tight text-gray-900">{bindCarrier.name}</p>
+                <p className="text-[11.5px] text-gray-400 mt-0.5">{bindCarrier.sub}</p>
               </div>
 
-              <div className="im-figures-rule mt-3 pt-2">
+              <div className="im-figures-rule mt-4 pt-2">
                 <div className="flex items-baseline justify-between gap-3 py-1">
                   <span className="text-[11.5px] text-gray-500">Effective</span>
                   <span className="text-[11.5px] font-semibold text-gray-800">{bindEffective}</span>

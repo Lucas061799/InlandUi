@@ -354,26 +354,39 @@ export function PillGroup({ options, value, onChange, label, className = '' }) {
   )
 }
 
+/* The GL / BOP question card: grey fill and grey stroke, the stroke turning
+   red while the question still needs an answer. Every question sits in one,
+   and whatever the answer opens stays inside the same card — never a second
+   box of its own. */
+export function QuestionCard({ error = false, className = '', children }) {
+  return (
+    <div
+      className={`rounded-xl p-4 sm:p-5 transition ${error ? 'im-q-error' : ''} ${className}`}
+      style={{ background: '#F9FAFB', border: `1px solid ${error ? '#FCA5A5' : '#E5E7EB'}` }}
+    >
+      {children}
+    </div>
+  )
+}
+
 /* One question: the sentence, the answer under it, and any follow-up the
-   answer opened nested behind a brand rule so it reads as a consequence of
-   the answer rather than a new question. */
-export function QuestionRow({ label, help, value, onChange, error = false, last = false, children }) {
+   answer opened below a rule so it reads as a consequence of the answer
+   rather than a new question. */
+export function QuestionRow({ label, help, value, onChange, error = false, children }) {
   /* A step passes every possible follow-up as a child and lets the answer
      decide which one renders. Unrendered branches come through as `false`,
      so test for real content before drawing the nested block. */
   const hasFollowUp = Children.toArray(children).some(Boolean)
 
   return (
-    <div className={`py-5 ${last ? '' : 'border-b border-gray-100'}`}>
+    <QuestionCard error={error}>
       <p className={`text-sm leading-relaxed mb-1 ${error ? 'text-red-500' : 'text-gray-800'}`}>{label}</p>
       {help && <p className="text-[12px] text-gray-400 mb-2.5 leading-relaxed max-w-2xl">{help}</p>}
       <div className={help ? '' : 'mt-3'}>
         <YesNo value={value} onChange={onChange} name={label} />
       </div>
-      {/* The detail sits directly under the answer with the small indent
-          the other Norbielink apps use — no rule down the side. */}
-      {hasFollowUp && <div className="mt-4 pl-2">{children}</div>}
-    </div>
+      {hasFollowUp && <div className="mt-4 pt-4 im-rule">{children}</div>}
+    </QuestionCard>
   )
 }
 
@@ -443,42 +456,26 @@ export function PrimaryButton({ children, onClick, disabled = false, className =
   )
 }
 
-/* Says out loud that the button is only open because prototype mode is on,
-   so a half-filled step is never mistaken for a finished one. */
-export function SkipBadge({ className = '' }) {
-  return (
-    <span
-      className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide align-middle ${className}`}
-      style={{ background: 'rgba(245,158,11,0.14)', color: '#B45309' }}
-    >
-      Prototype · skipping
-    </span>
-  )
-}
-
 /* Back + Continue, with the reason Continue is not available spelled out
    next to it instead of only on the field that is missing.
 
    `canContinue` still arrives from the step's own completeness rules and is
    still what the hint reports. Prototype mode does not change that answer —
-   it only lets the button through anyway, and says so. */
+   it only lets the button through anyway. */
 export function StepNav({ onBack, onContinue, canContinue = true, hint, continueLabel = 'Continue' }) {
   const [proto] = usePrototypeMode()
-  const skipping = proto && !canContinue
 
   return (
     /* Back on the left, forward on the right — the same footer shape as the
        GL / BOP review page. The empty span keeps Continue pinned right on
        the first step, which has nowhere to go back to. */
-    <div className="pt-2">
+    <div>
       {/* The hint gets its own line above the buttons. Wedged between Back
           and Continue it squeezed both and read as a label on the button
           rather than a note about the step. */}
       {hint && (
         <p className={`text-xs mb-3 ${canContinue ? 'text-gray-400' : 'text-gray-500'}`}>
           {hint}
-          {/* Never let a skipped step look like a finished one. */}
-          {skipping && <SkipBadge />}
         </p>
       )}
 

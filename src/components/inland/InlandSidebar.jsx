@@ -32,9 +32,9 @@ export default function InlandSidebar({
         {STEPS.map(step => {
           const isActive = step.id === activeStep
           const isDone = !!completion[step.id]
-          /* A step opens once the flow has reached it. Jumping ahead to a
-             step whose answers depend on earlier ones only produces an
-             empty form and a confusing back-and-forth. */
+          /* The four form sections share one page and none depends on
+             another, so they are always open — InlandApp passes a maxStep
+             that covers them. Compare Quotes and Bind open once reached. */
           const reachable = step.id <= maxStep
 
           return (

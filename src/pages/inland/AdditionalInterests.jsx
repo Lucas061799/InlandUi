@@ -1,7 +1,7 @@
 import AddressAutocomplete from '../../components/AddressAutocomplete'
 import { FormGrid, Input, Select } from '../../components/FormField'
 import {
-  AddAnother, NotePanel, QuestionRow, RemoveButton, SectionLabel, StepHeader, StepNav,
+  AddAnother, QuestionRow, RemoveButton, SectionLabel, StepHeader, StepNav,
 } from '../../components/inland/primitives'
 import {
   INTEREST_COVERAGE_TYPES, INTEREST_TYPES, LOSS_PAYEE_TYPES, US_STATES,
@@ -99,7 +99,7 @@ function InterestBlock({ index, value, total, onChange, onRemove, showErrors }) 
   )
 }
 
-export default function AdditionalInterests({ data, set, onBack, onContinue, showErrors }) {
+export default function AdditionalInterests({ data, set, onBack, onContinue, showErrors, hideNav = false }) {
   const list = data.interests || []
   const complete = interestsComplete(data)
 
@@ -117,7 +117,6 @@ export default function AdditionalInterests({ data, set, onBack, onContinue, sho
             value={data.hasInterests}
             onChange={(v) => (v === 'yes' ? answerYes() : set({ hasInterests: 'no' }))}
             error={showErrors && data.hasInterests !== 'yes' && data.hasInterests !== 'no'}
-            last
           >
             {data.hasInterests === 'yes' && (
               <div>
@@ -150,27 +149,26 @@ export default function AdditionalInterests({ data, set, onBack, onContinue, sho
           </QuestionRow>
         </div>
 
-        {data.hasInterests === 'no' && (
-          <NotePanel title="Nothing more to enter.">
-            Continue goes straight to the carrier prices. An interest can still be added any time before the
-            policy issues.
-          </NotePanel>
-        )}
       </div>
 
-      <div className="mt-7">
+      {/* mt-3, not mt-7: the question row above already ends on 20px of its
+          own padding, so the usual 28px stacked into a 56px hole. */}
+      {/* On the long page one Get quotes closes all four sections. */}
+      {!hideNav && (
+      <div className="mt-3">
         <StepNav
           onBack={onBack}
           onContinue={onContinue}
           canContinue={complete}
           continueLabel={complete ? 'Get quotes' : 'Continue'}
-          hint={!data.hasInterests
-            ? 'Answer the question to continue'
-            : complete
-              ? undefined
-              : 'Please fill in all the mandatory details'}
+          /* No hint until the question is answered — a lone Yes/No needs no
+             footnote telling you to click it. */
+          hint={!data.hasInterests || complete
+            ? undefined
+            : 'Please fill in all the mandatory details'}
         />
       </div>
+      )}
     </div>
   )
 }

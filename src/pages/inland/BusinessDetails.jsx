@@ -5,7 +5,7 @@ import { FieldError, FieldGroup, InfoLine, NotePanel, StepHeader, StepNav } from
 import { BUSINESS_TYPES, US_STATES, YEAR_OPTIONS } from '../../data/inland'
 import { businessComplete, businessRuleErrors, classCodeComplete } from './validation'
 
-export default function BusinessDetails({ data, set, classCode, setClassCode, onBack, onContinue, showErrors }) {
+export default function BusinessDetails({ data, set, classCode, setClassCode, onBack, onContinue, showErrors, hideNav = false }) {
   const err = (key) => showErrors && !data[key]
   const mailingSame = data.mailingSame !== false
   const inspectionSame = data.inspectionSame !== false
@@ -175,6 +175,8 @@ export default function BusinessDetails({ data, set, classCode, setClassCode, on
         </FieldGroup>
       </div>
 
+      {/* On the long page one Get quotes closes all four sections. */}
+      {!hideNav && (
       <div className="mt-7">
         <StepNav
           onBack={onBack}
@@ -183,6 +185,7 @@ export default function BusinessDetails({ data, set, classCode, setClassCode, on
           hint={complete && classOk ? undefined : 'Some answers above still need attention'}
         />
       </div>
+      )}
     </div>
   )
 }

@@ -597,6 +597,30 @@ button.force-white-text,
 }
 [data-dark="true"] .im-radio-on { background: linear-gradient(88.09deg, #A78BFA 0%, #E879F9 100%) !important; }
 
+/* A question card still waiting on an answer. The dark card rule resets
+   every #F9FAFB card's border, so the red stroke needs its own dark value —
+   same specificity, later in the file. */
+[data-dark="true"] .bop-page div.im-q-error { border-color: rgba(248,113,113,0.55) !important; }
+
+/* Signed-application upload on Bind — the GL / BOP upload's dashed brand
+   drop zone, icon tiles and file rows, as classes so dark mode can reach
+   them. Border colour comes from here; Tailwind border-2 border-dashed only
+   sets width and style. */
+.im-drop { border-color: rgba(92,46,212,0.2); background: rgba(248,246,255,0.6); }
+.im-drop:hover, .im-drop-on { border-color: #5C2ED4; background: rgba(92,46,212,0.04); }
+.im-icon-tile { background: rgba(92,46,212,0.08); }
+.im-file-row { background: rgba(248,246,255,0.7); border: 1px solid rgba(92,46,212,0.12); }
+.im-file-remove { background: rgba(92,46,212,0.07); color: #A614C3; }
+.im-file-remove:hover { background: rgba(166,20,195,0.15); }
+[data-dark="true"] .bop-page .im-drop,
+[data-dark="true"] .im-drop { border-color: rgba(167,139,250,0.35) !important; background: rgba(167,139,250,0.06) !important; }
+[data-dark="true"] .im-drop:hover,
+[data-dark="true"] .im-drop-on { border-color: #A78BFA !important; background: rgba(167,139,250,0.12) !important; }
+[data-dark="true"] .im-icon-tile { background: rgba(167,139,250,0.14) !important; }
+[data-dark="true"] .bop-page .im-file-row,
+[data-dark="true"] .im-file-row { background: rgba(167,139,250,0.08) !important; border-color: rgba(167,139,250,0.22) !important; }
+[data-dark="true"] .im-file-remove { background: rgba(167,139,250,0.14) !important; color: #F0ABFC !important; }
+
 /* Submission-complete card — the framed summary Commercial Auto and GL /
    BOP end on, for Inland Marine's sent screen. Light values match those
    pages' inline ones; dark matches their isDark branch. */

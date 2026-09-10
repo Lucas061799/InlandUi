@@ -1,6 +1,6 @@
 import { Input, Select } from '../../components/FormField'
 import {
-  AddAnother, Banner, FieldError, InfoDot, MoneyInput, RemoveButton, SectionLabel, StepHeader, StepNav, Tag, Toggle,
+  AddAnother, Banner, FieldError, InfoDot, MoneyInput, QuestionCard, RemoveButton, SectionLabel, StepHeader, StepNav, Tag, Toggle,
 } from '../../components/inland/primitives'
 import {
   ENHANCED_ITEMS, EQUIPMENT_CLASSES, SCHEDULE_ITEMS, SCHEDULE_ITEM_MIN, SCHEDULE_TOTAL_MAX, money,
@@ -110,7 +110,7 @@ function ScheduleRow({ item, line, set, showErrors }) {
   const incomplete = on && showErrors && !lineComplete(item, line)
 
   return (
-    <div className="py-4 border-b border-gray-100">
+    <QuestionCard error={incomplete}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -123,7 +123,7 @@ function ScheduleRow({ item, line, set, showErrors }) {
       </div>
 
       {on && (
-        <div className="mt-4 rounded-xl p-4 sm:p-5" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+        <div className="mt-4 pt-4 im-rule">
           {item.note && <p className="text-[12.5px] text-gray-500 mb-3.5">{item.note}</p>}
 
           {item.itemSchedule ? (
@@ -154,11 +154,11 @@ function ScheduleRow({ item, line, set, showErrors }) {
           )}
         </div>
       )}
-    </div>
+    </QuestionCard>
   )
 }
 
-export default function Coverage({ data, set, onBack, onContinue, showErrors }) {
+export default function Coverage({ data, set, onBack, onContinue, showErrors, hideNav = false }) {
   const setLine = (id) => (patch) => set({ [id]: { ...(data[id] || {}), ...patch } })
   const on = selectedLines(data)
   const complete = coverageComplete(data)
@@ -177,7 +177,7 @@ export default function Coverage({ data, set, onBack, onContinue, showErrors }) 
       </div>
 
       <SectionLabel>Choose what to schedule</SectionLabel>
-      <div>
+      <div className="space-y-3">
         {SCHEDULE_ITEMS.map(item => (
           <ScheduleRow
             key={item.id}
@@ -196,6 +196,8 @@ export default function Coverage({ data, set, onBack, onContinue, showErrors }) 
         </p>
       )}
 
+      {/* On the long page one Get quotes closes all four sections. */}
+      {!hideNav && (
       <div className="mt-7">
         <StepNav
           onBack={onBack}
@@ -208,6 +210,7 @@ export default function Coverage({ data, set, onBack, onContinue, showErrors }) 
               : 'Every line you switched on needs a value'}
         />
       </div>
+      )}
     </div>
   )
 }

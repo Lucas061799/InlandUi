@@ -13,7 +13,7 @@
 import { useState } from 'react'
 import { Checkbox, DateInput, FormGrid, Input } from '../../components/FormField'
 import {
-  Banner, BrandText, FieldError, FieldGroup, MoneyInput, PrimaryButton, StepHeader,
+  Banner, BrandText, FieldError, MoneyInput, PrimaryButton, SectionLabel, StepHeader,
 } from '../../components/inland/primitives'
 import {
   BRAND_GRADIENT, MAX_BROKER_FEE, PAYMENT_METHODS, SIGNATURE_METHODS,
@@ -57,7 +57,13 @@ function ChoiceCard({ selected, label, detail, onSelect, children }) {
       {/* pl-11 lines the revealed field up with the label and description,
           not the card edge: the radio is 16px and the gap 12px, so the text
           column starts 28px past the card's own px-4. */}
-      {selected && children && <div className="pl-11 pr-4 pb-4">{children}</div>}
+      {/* What a choice opens sits under a thin rule inside the same card —
+          no panel-in-a-card-in-a-card, which read as boxes three deep. */}
+      {selected && children && (
+        <div className="pl-11 pr-4 pb-4">
+          <div className="im-rule-brand pt-4">{children}</div>
+        </div>
+      )}
     </div>
   )
 }
@@ -86,7 +92,7 @@ function UploadChecklist({ termsSaved, uploaded }) {
   ]
 
   return (
-    <div className="rounded-xl px-4 py-3.5 space-y-3" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+    <div className="space-y-3">
       {steps.map((st, i) => (
         <div key={st.title} className="flex items-start gap-2.5">
           <span
@@ -246,6 +252,7 @@ function SentConfirmation({ carrier, totals, submissionNumber, viaUpload, onStar
 
 export default function Bind({ data, set, submission, submissionNumber, onBack, onBound, onStartOver, showErrors }) {
   const [feeOpen, setFeeOpen] = useState(!!data.brokerFee)
+  const [dragging, setDragging] = useState(false)
   const { terminal, quoted } = quoteState(submission)
 
   if (terminal) {
@@ -293,6 +300,18 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
   const schedule = financeSchedule(totals.total)
   const isUpload = data.signature === 'upload'
   const uploaded = (data.files || []).length > 0
+  /* Files are kept as { name, size }. Older entries were bare names, so
+     normalise rather than assume. PDFs only, 10 MB each, 10 at most. */
+  const files = (data.files || []).map(f => (typeof f === 'string' ? { name: f, size: 0 } : f))
+  const addFiles = (list) => {
+    const incoming = [...(list || [])]
+      .filter(f => (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)) && f.size <= 10 * 1024 * 1024)
+      .map(f => ({ name: f.name, size: f.size }))
+      .filter(f => !files.some(e => e.name === f.name))
+    set({ files: [...files, ...incoming].slice(0, 10) })
+  }
+  const removeFile = (name) => set({ files: files.filter(f => f.name !== name) })
+  const formatBytes = (n) => (!n ? '' : n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`)
   const complete = bindComplete(submission)
 
   /* The upload path saves the terms first and only then accepts the signed
@@ -319,7 +338,8 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
           which is the order you fill this in anyway. */}
       <div>
         <div className="space-y-7">
-          <FieldGroup label="Terms">
+          <div>
+            <SectionLabel>Terms</SectionLabel>
             {/* Date and fee share a row rather than stacking two narrow
                 boxes down the left edge of a wide column. */}
             <FormGrid>
@@ -359,10 +379,11 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
                 </div>
               )}
             </FormGrid>
-          </FieldGroup>
+          </div>
 
-          <FieldGroup label="Payment">
-            <p className="text-[12px] text-gray-400 mb-3 -mt-1">How the premium is collected.</p>
+          <div>
+            <SectionLabel>Payment</SectionLabel>
+            <p className="text-[12px] text-gray-400 mb-3">How the premium is collected.</p>
             <div className="space-y-2.5">
               {PAYMENT_METHODS.map(m => (
                 <ChoiceCard
@@ -373,7 +394,7 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
                   onSelect={() => set({ payment: m.id })}
                 >
                   {m.id === 'financing' && (
-                    <div className="rounded-xl px-4 py-3.5" style={{ background: 'white', border: '1px solid #E5E7EB' }}>
+                    <div>
                       {/* Thirds, not a packed row: the figures are one set of
                           numbers to read across, so they get even columns
                           rather than bunching against the left edge. */}
@@ -392,7 +413,7 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
 
                       {/* A rule between what it costs and what you agree to —
                           they are two different things to read. */}
-                      <p className="text-[12px] font-semibold mt-4 pt-4 im-rule underline underline-offset-2" style={{ color: '#5C2ED4' }}>
+                      <p className="text-[12px] font-semibold mt-4 pt-4 im-rule-brand underline underline-offset-2" style={{ color: '#5C2ED4' }}>
                         Review your premium finance agreement
                       </p>
                       <div className="space-y-2 mt-3">
@@ -418,10 +439,11 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
             {showErrors && !data.payment && (
               <FieldError className="mt-2">Choose how the premium is collected.</FieldError>
             )}
-          </FieldGroup>
+          </div>
 
-          <FieldGroup label="Signature">
-            <p className="text-[12px] text-gray-400 mb-3 -mt-1">The application has to be signed by the insured before it binds.</p>
+          <div>
+            <SectionLabel>Signature</SectionLabel>
+            <p className="text-[12px] text-gray-400 mb-3">The application has to be signed by the insured before it binds.</p>
             <div className="space-y-2.5">
               {SIGNATURE_METHODS.map(m => (
                 <ChoiceCard
@@ -450,49 +472,96 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
 
                       {data.termsSaved && (
                         <>
-                          <div className="rounded-xl px-4 py-3.5" style={{ background: 'white', border: '1px solid #E5E7EB' }}>
+                          <div className="im-rule-brand pt-4">
                             <p className="text-[12.5px] font-bold text-gray-800">Step 1 — download the application</p>
                             <p className="text-[11.5px] text-gray-500 leading-relaxed mt-0.5 mb-3">
                               Both the applicant and the agent have to sign it. Backdating is not permitted.
                             </p>
+                            {/* The app's download action — the gradient button and
+                                arrow the GL / BOP summary downloads with. */}
                             <button
                               type="button"
-                              className="h-9 px-4 inline-flex items-center rounded-xl text-[12.5px] font-semibold transition-all"
-                              style={{ background: 'white', border: '1.5px solid #E5E7EB', color: '#6B7280' }}
+                              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-semibold force-white-text transition hover:opacity-90"
+                              style={{ background: BRAND_GRADIENT, color: 'white', boxShadow: '0 4px 14px rgba(92,46,212,0.25)' }}
                             >
                               Download binding application
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 3v12m0 0l-4-4m4 4 4-4M5 21h14" />
+                              </svg>
                             </button>
                           </div>
 
-                          <div className="rounded-xl px-4 py-3.5" style={{ background: 'white', border: '1px solid #E5E7EB' }}>
+                          <div className="im-rule-brand pt-4">
                             <p className="text-[12.5px] font-bold text-gray-800">Step 2 — upload the signed copy</p>
                             <p className="text-[11.5px] text-gray-500 mt-0.5 mb-3">PDF only, up to 10 MB each, 10 files at most.</p>
+
+                            {/* The GL / BOP upload's drop zone: dashed brand border,
+                                a paperclip tile, and "click to browse". */}
                             <label
-                              className="block rounded-xl px-4 py-5 text-center cursor-pointer transition-all"
-                              style={{ background: '#F9FAFB', border: '1.5px dashed #D1D5DB' }}
+                              onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                              onDragLeave={() => setDragging(false)}
+                              onDrop={(e) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
+                              className={`im-drop ${dragging ? 'im-drop-on' : ''} cursor-pointer rounded-xl border-2 border-dashed flex flex-col items-center gap-2 transition-all ${uploaded ? 'py-3.5' : 'py-7'}`}
                             >
                               <input
                                 type="file"
                                 accept="application/pdf"
                                 multiple
                                 className="hidden"
-                                onChange={(e) => set({ files: [...e.target.files].map(f => f.name).slice(0, 10) })}
+                                onChange={(e) => { addFiles(e.target.files); e.target.value = '' }}
                               />
-                              <span className="block text-[12.5px] font-semibold" style={{ color: '#5C2ED4' }}>
-                                Choose files
+                              <span className="im-icon-tile w-11 h-11 rounded-xl flex items-center justify-center">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                  <path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" stroke="url(#imClipG)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                  <defs>
+                                    <linearGradient id="imClipG" x1="0%" y1="0%" x2="100%" y2="0%">
+                                      <stop offset="0%" stopColor="#5C2ED4" /><stop offset="100%" stopColor="#A614C3" />
+                                    </linearGradient>
+                                  </defs>
+                                </svg>
                               </span>
-                              <span className="block text-[11.5px] text-gray-400 mt-0.5">
-                                Drag files onto the field or browse for them.
-                              </span>
+                              {uploaded ? (
+                                <span className="text-xs text-gray-400">or <span className="text-gradient font-semibold">add more files</span></span>
+                              ) : (
+                                <>
+                                  <span className="text-sm font-semibold text-gray-900">Drop the signed application here</span>
+                                  <span className="text-xs text-gray-400">or <span className="text-gradient font-semibold">click to browse</span></span>
+                                </>
+                              )}
                             </label>
+
                             {uploaded && (
-                              <ul className="mt-3 space-y-1">
-                                {data.files.map(f => (
-                                  <li key={f} className="text-[11.5px] text-gray-600 flex items-center gap-1.5">
-                                    <span style={{ color: '#047857' }}>✓</span> {f}
-                                  </li>
+                              <div className="space-y-2 mt-2.5">
+                                {files.map(f => (
+                                  <div key={f.name} className="im-file-row flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                                    <span className="im-icon-tile w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                        <path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke="url(#imPdfG)" strokeWidth="1.6" strokeLinejoin="round" />
+                                        <path d="M13 3v5a1 1 0 001 1h5M9 13h6M9 17h4" stroke="url(#imPdfG)" strokeWidth="1.6" strokeLinecap="round" />
+                                        <defs>
+                                          <linearGradient id="imPdfG" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stopColor="#5C2ED4" /><stop offset="100%" stopColor="#A614C3" />
+                                          </linearGradient>
+                                        </defs>
+                                      </svg>
+                                    </span>
+                                    <span className="flex-1 min-w-0">
+                                      <span className="block text-xs font-semibold text-gray-900 truncate">{f.name}</span>
+                                      {f.size > 0 && <span className="block text-[10px] text-gray-400">{formatBytes(f.size)}</span>}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeFile(f.name)}
+                                      aria-label={`Remove ${f.name}`}
+                                      className="im-file-remove w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition"
+                                    >
+                                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
                                 ))}
-                              </ul>
+                              </div>
                             )}
                             {showErrors && !uploaded && (
                               <FieldError className="mt-2">Add the signed application to continue.</FieldError>
@@ -508,7 +577,7 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
             {showErrors && !data.signature && (
               <FieldError className="mt-2">Choose how the application gets signed.</FieldError>
             )}
-          </FieldGroup>
+          </div>
         </div>
 
         {/* The upload path is not waiting on a decision, it is waiting on a
