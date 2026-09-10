@@ -20,6 +20,7 @@ import {
   bindTotals, carrierById, financeSchedule, money, money2, quoteFor,
 } from '../../data/inland'
 import { bindComplete, premiumFor, quoteState } from './validation'
+import SubmissionDetails from './SubmissionDetails'
 
 function SummaryRow({ label, value, last = false }) {
   return (
@@ -68,19 +69,32 @@ function ChoiceCard({ selected, label, detail, onSelect, children }) {
   )
 }
 
-/* A numbered step on the upload path that turns into a green tick once it
-   is done — the same mark the checklist used, now on the step itself. */
-function StepMark({ n, done, title, detail }) {
+/* A numbered step on the upload path that ticks once it is done. Done is
+   the sidebar's done step — a brand-tinted circle with a purple→magenta
+   check — not a separate green; im-sub-check carries the dark variant and
+   the im- gradient id picks up the lighter dark-mode stops. */
+function StepMark({ n, done, title, detail, className = 'mb-3' }) {
   return (
-    <div className="flex items-start gap-2.5 mb-3">
-      <span
-        className="w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-[9px] font-bold"
-        style={done
-          ? { background: '#10B981', color: 'white' }
-          : { border: '1.5px solid #D1D5DB', color: '#9CA3AF' }}
-      >
-        {done ? '✓' : n}
-      </span>
+    <div className={`flex items-start gap-2.5 ${className}`}>
+      {done ? (
+        <span className="im-sub-check w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center">
+          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24">
+            <defs>
+              <linearGradient id={`imStepCheckG${n}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#5C2ED4" /><stop offset="100%" stopColor="#A614C3" />
+              </linearGradient>
+            </defs>
+            <path d="M5 13l4 4L19 7" stroke={`url(#imStepCheckG${n})`} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      ) : (
+        <span
+          className="w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-[9px] font-bold"
+          style={{ border: '1.5px solid #D1D5DB', color: '#9CA3AF' }}
+        >
+          {n}
+        </span>
+      )}
       <span className="min-w-0">
         <span className="block text-[12.5px] font-bold text-gray-800">{title}</span>
         <span className="block text-[11.5px] text-gray-500 leading-relaxed">{detail}</span>
@@ -134,7 +148,7 @@ function UnderwritingOutcome({ kind, submission, submissionNumber, onStartOver }
    the details. Not "bound" — the policy binds when the insured signs, and
    saying so is the point of this screen. Colours live in im-sub-* classes
    because this flow themes through index.css, not an isDark prop. */
-function SentConfirmation({ carrier, totals, submissionNumber, viaUpload, onStartOver }) {
+function SentConfirmation({ carrier, totals, submission, submissionNumber, viaUpload }) {
   const sentOn = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   const info = [
     { label: 'Quote number', value: submissionNumber, brand: true },
@@ -212,16 +226,10 @@ function SentConfirmation({ carrier, totals, submissionNumber, viaUpload, onStar
             <span className="text-[15px] font-bold text-gray-900">{money(totals.total)}</span>
           </div>
         </div>
-      </div>
 
-      <button
-        type="button"
-        onClick={onStartOver}
-        className="h-10 px-6 min-w-[112px] inline-flex items-center justify-center rounded-xl text-sm font-semibold transition-all"
-        style={{ background: 'white', border: '1.5px solid #E5E7EB', color: '#6B7280' }}
-      >
-        Start another submission
-      </button>
+        {/* Commercial Auto's full submission, shown inside the card. */}
+        <SubmissionDetails submission={submission} />
+      </div>
     </div>
   )
 }
@@ -267,8 +275,8 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
         carrier={carrier}
         totals={totals}
         submissionNumber={submissionNumber}
+        submission={submission}
         viaUpload={data.signature === 'upload'}
-        onStartOver={onStartOver}
       />
     )
   }
@@ -439,11 +447,13 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
                   {m.id === 'upload' && (
                     <div>
                           <div>
+                            {/* Three steps, in the order they happen: get the
+                                document, get the signatures, bring it back. */}
                             <StepMark
                               n={1}
-                              done={!!data.downloaded}
-                              title="Download the application and get it signed"
-                              detail="Both the applicant and the agent sign it. Backdating is not permitted."
+                              done={!!data.downloaded || uploaded}
+                              title="Download the binding application"
+                              detail="The application with the terms above filled in."
                             />
                             {/* The app's download action — the gradient button and
                                 arrow the GL / BOP summary downloads with. */}
@@ -460,9 +470,21 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
                             </button>
                           </div>
 
+                          {/* Nothing to click for the signatures, so it ticks
+                              when the signed copy arrives — that is the proof. */}
                           <div className="im-rule-brand pt-4 mt-4">
                             <StepMark
                               n={2}
+                              done={uploaded}
+                              title="Get it signed"
+                              detail="Both the applicant and the agent sign it. Backdating is not permitted."
+                              className=""
+                            />
+                          </div>
+
+                          <div className="im-rule-brand pt-4 mt-4">
+                            <StepMark
+                              n={3}
                               done={uploaded}
                               title="Upload the signed copy"
                               detail="PDF only, up to 10 MB each, 10 files at most."

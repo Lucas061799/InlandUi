@@ -597,6 +597,10 @@ button.force-white-text,
 }
 [data-dark="true"] .im-radio-on { background: linear-gradient(88.09deg, #A78BFA 0%, #E879F9 100%) !important; }
 
+/* Item labels inside the full submission — Commercial Auto's purple. */
+.im-sub-label { color: #5C2ED4; }
+[data-dark="true"] .im-sub-label { color: #A78BFA !important; }
+
 /* A question card still waiting on an answer. The dark card rule resets
    every #F9FAFB card's border, so the red stroke needs its own dark value —
    same specificity, later in the file. */
