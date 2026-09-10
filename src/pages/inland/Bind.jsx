@@ -34,18 +34,21 @@ function SummaryRow({ label, value, last = false }) {
    both "pick one of two, and the one you pick opens something". */
 function ChoiceCard({ selected, label, detail, onSelect, children }) {
   return (
+    /* Selected is the brand purple→magenta as a stroke — a class, so dark
+       mode can swap the stops. The flat #7C3AED ring it replaces read as
+       plain violet next to the gradient everywhere else. */
     <div
-      className="rounded-xl transition-all"
-      style={{
-        background: selected ? 'rgba(92,46,212,0.04)' : 'white',
-        border: `1.5px solid ${selected ? '#7C3AED' : '#E5E7EB'}`,
-      }}
+      className={`rounded-xl transition-all ${selected ? 'im-choice-on' : ''}`}
+      style={selected ? undefined : { background: 'white', border: '1.5px solid #E5E7EB' }}
     >
       <button type="button" onClick={onSelect} className="w-full text-left px-4 py-3.5 flex items-start gap-3">
-        <span
-          className="w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center"
-          style={selected ? { border: '5px solid #7C3AED' } : { border: '2px solid #D1D5DB' }}
-        />
+        {selected ? (
+          <span className="im-radio-on w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center">
+            <span className="im-radio-dot w-1.5 h-1.5 rounded-full" />
+          </span>
+        ) : (
+          <span className="w-4 h-4 rounded-full shrink-0 mt-0.5" style={{ border: '2px solid #D1D5DB' }} />
+        )}
         <span className="min-w-0">
           <span className="block text-[13.5px] font-bold text-gray-900">{label}</span>
           <span className="block text-[12px] text-gray-500 leading-relaxed mt-0.5">{detail}</span>
@@ -144,38 +147,88 @@ function UnderwritingOutcome({ kind, submission, submissionNumber, onStartOver }
   )
 }
 
-/* The end of the flow. Not "bound" — the policy binds when the insured
-   signs, and saying so is the whole point of this screen. */
+/* The end of the flow, in the framed card the Commercial Auto and GL / BOP
+   submission pages close on: accent bar, header, a three-up info row, then
+   the details. Not "bound" — the policy binds when the insured signs, and
+   saying so is the point of this screen. Colours live in im-sub-* classes
+   because this flow themes through index.css, not an isDark prop. */
 function SentConfirmation({ carrier, totals, submissionNumber, viaUpload, onStartOver }) {
+  const sentOn = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const info = [
+    { label: 'Quote number', value: submissionNumber, brand: true },
+    { label: viaUpload ? 'Date received' : 'Date sent', value: sentOn },
+    { label: 'Status', value: viaUpload ? 'Checking signatures' : 'Awaiting signature', pending: true },
+  ]
+
   return (
-    <div className="w-full">
-      <span
-        className="w-9 h-9 rounded-full flex items-center justify-center mb-5"
-        style={{ background: 'rgba(16,185,129,0.14)' }}
-      >
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 13l4 4L19 7" />
-        </svg>
-      </span>
+    <div className="w-full space-y-5">
+      <div className="im-sub-card rounded-2xl overflow-hidden">
+        <div className="h-1" style={{ background: BRAND_GRADIENT }} />
 
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-        {viaUpload ? 'Signed application received' : 'Sent for signature'}
-      </h2>
-      <p className="text-sm text-gray-500 leading-relaxed max-w-xl mb-7">
-        {viaUpload
-          ? 'Both signatures are in. The policy binds once the carrier confirms, and you can track it in NorbieLink until it does.'
-          : 'The policy binds automatically as soon as the insured signs, and you can track it in NorbieLink until it does.'}
-      </p>
+        <div className="flex items-start gap-4 px-6 pt-5 pb-4">
+          <div className="im-sub-check w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <defs>
+                <linearGradient id="imSentG" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" className="im-sub-stop-a" />
+                  <stop offset="100%" className="im-sub-stop-b" />
+                </linearGradient>
+              </defs>
+              <path d="M5 13l4 4L19 7" stroke="url(#imSentG)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-gray-900 mb-1">
+              {viaUpload ? 'Signed application received' : 'Sent for signature'}
+            </h1>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              {viaUpload
+                ? 'Both signatures are in. The policy binds once the carrier confirms, and you can track it in NorbieLink until it does.'
+                : 'The policy binds automatically as soon as the insured signs, and you can track it in NorbieLink until it does.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            title="Print / Save as PDF"
+            className="im-sub-print w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <path stroke="url(#imSentG)" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+          </button>
+        </div>
 
-      <div className="rounded-2xl p-6 mb-7" style={{ background: 'white', border: '1px solid #E5E7EB' }}>
-        <SummaryRow label="Quote number" value={submissionNumber} />
-        <SummaryRow label="Carrier" value={`${carrier.name} · ${carrier.sub}`} />
-        {totals.lines.map(l => (
-          <SummaryRow key={l.id} label={l.label} value={l.note || money(l.value)} />
-        ))}
-        <div className="flex items-start justify-between gap-6 pt-3.5 mt-1">
-          <span className="text-[13px] font-bold text-gray-800">Total</span>
-          <span className="text-[15px] font-bold text-gray-900">{money(totals.total)}</span>
+        {/* Quote number · date · status, the same three-up row the other
+            submission pages use. */}
+        <div className="im-sub-rule grid grid-cols-3">
+          {info.map((item, i) => (
+            <div key={item.label} className={`px-5 py-4 min-w-0 ${i ? 'im-sub-cell' : ''}`}>
+              <p className="text-[10px] text-gray-400 mb-1">{item.label}</p>
+              {item.pending ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                  <span className="text-sm font-semibold text-amber-500">{item.value}</span>
+                </span>
+              ) : item.brand ? (
+                <p className="text-sm font-semibold"><span className="text-gradient">{item.value}</span></p>
+              ) : (
+                <p className="text-sm font-semibold text-gray-900">{item.value}</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* What was sent: the carrier and the total it is made of. */}
+        <div className="im-sub-rule px-6 py-4">
+          <SummaryRow label="Carrier" value={`${carrier.name} · ${carrier.sub}`} />
+          {totals.lines.map(l => (
+            <SummaryRow key={l.id} label={l.label} value={l.note || money(l.value)} />
+          ))}
+          <div className="flex items-start justify-between gap-6 pt-3.5 mt-1">
+            <span className="text-[13px] font-bold text-gray-800">Total</span>
+            <span className="text-[15px] font-bold text-gray-900">{money(totals.total)}</span>
+          </div>
         </div>
       </div>
 
@@ -462,14 +515,14 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
             document — so it says so instead of offering a tick that changes
             nothing. */}
         {isUpload && data.termsSaved && !uploaded ? (
-          <div className="rounded-xl px-4 py-3.5 mt-5" style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)' }}>
+          <div className="rounded-xl px-4 py-3.5 mt-8" style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)' }}>
             <p className="text-[12.5px] font-bold" style={{ color: '#B45309' }}>Waiting for the signed application</p>
             <p className="text-[11.5px] leading-relaxed mt-0.5" style={{ color: '#B45309' }}>
               Terms and payment are saved. Attach the signed copy to bind. Nothing has been charged.
             </p>
           </div>
         ) : (
-          <div className="mt-5">
+          <div className="mt-8">
             <Checkbox
               label="As an agent, I agree that information entered in this application is correct to my knowledge."
               checked={!!data.attested}
@@ -480,10 +533,10 @@ export default function Bind({ data, set, submission, submissionNumber, onBack, 
 
         {/* Same footer shape as every other step: Back left, the action
             right, and the line that qualifies it above them. */}
-        <div className="mt-7 pt-2">
+        <div className="mt-4">
           {/* The figures live in the rail now, but the number the button
               commits belongs next to the button. */}
-          <p className="text-xs text-gray-400 mb-3">
+          <p className="text-xs text-gray-400 mb-4">
             <span className="text-[13px] font-bold text-gray-800">Total {money(totals.total)}</span>
             {' · Nothing is charged until the insured signs. '}
             <span className="font-semibold underline underline-offset-2" style={{ color: '#5C2ED4' }}>

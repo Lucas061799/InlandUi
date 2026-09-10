@@ -95,36 +95,37 @@ export default function InlandRightRail({ formData, activeStep, isDark, totalSte
               What binds
             </div>
 
-            <div
-              className="rounded-xl px-3 py-2.5 flex items-center gap-2.5"
-              style={{ background: 'white', border: '1px solid #E5E7EB' }}
-            >
-              <div
-                className="im-carrier-tile rounded-lg flex items-center justify-center shrink-0"
-                style={{ width: 36, height: 36, padding: 3.5 }}
-              >
-                <img src={bindCarrier.logo} alt="" className="max-w-full max-h-full object-contain" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[12.5px] font-bold leading-tight text-gray-800">{bindCarrier.name}</p>
-                <p className="text-[10.5px] text-gray-400 leading-tight">{bindCarrier.sub}</p>
-              </div>
-            </div>
-
-            <div className="im-figures rounded-xl px-3.5 py-3 mt-2">
-              <div className="flex items-baseline justify-between gap-3 py-1">
-                <span className="text-[11.5px] text-gray-500">Effective</span>
-                <span className="text-[11.5px] font-semibold text-gray-800">{bindEffective}</span>
-              </div>
-              {bindFigures.lines.map(l => (
-                <div key={l.id} className="flex items-baseline justify-between gap-3 py-1">
-                  <span className="text-[11.5px] text-gray-500">{l.label}</span>
-                  <span className="text-[11.5px] font-semibold text-gray-800">{l.note || money(l.value)}</span>
+            {/* One card, one stroke: who is binding and what it costs are the
+                same fact, so they sit inside the same outline. */}
+            <div className="im-figures rounded-xl px-3.5 py-3">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="im-carrier-tile rounded-lg flex items-center justify-center shrink-0"
+                  style={{ width: 36, height: 36, padding: 3.5 }}
+                >
+                  <img src={bindCarrier.logo} alt="" className="max-w-full max-h-full object-contain" />
                 </div>
-              ))}
-              <div className="im-figures-rule flex items-baseline justify-between gap-3 pt-2.5 mt-1.5">
-                <span className="text-[12px] font-bold text-gray-800">Total</span>
-                <span className="im-figures-total text-[18px] font-bold leading-none">{money(bindFigures.total)}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12.5px] font-bold leading-tight text-gray-800">{bindCarrier.name}</p>
+                  <p className="text-[10.5px] text-gray-400 leading-tight">{bindCarrier.sub}</p>
+                </div>
+              </div>
+
+              <div className="im-figures-rule mt-3 pt-2">
+                <div className="flex items-baseline justify-between gap-3 py-1">
+                  <span className="text-[11.5px] text-gray-500">Effective</span>
+                  <span className="text-[11.5px] font-semibold text-gray-800">{bindEffective}</span>
+                </div>
+                {bindFigures.lines.map(l => (
+                  <div key={l.id} className="flex items-baseline justify-between gap-3 py-1">
+                    <span className="text-[11.5px] text-gray-500">{l.label}</span>
+                    <span className="text-[11.5px] font-semibold text-gray-800">{l.note || money(l.value)}</span>
+                  </div>
+                ))}
+                <div className="im-figures-rule flex items-baseline justify-between gap-3 pt-2.5 mt-1.5">
+                  <span className="text-[12px] font-bold text-gray-800">Total</span>
+                  <span className="im-figures-total text-[18px] font-bold leading-none">{money(bindFigures.total)}</span>
+                </div>
               </div>
             </div>
           </div>

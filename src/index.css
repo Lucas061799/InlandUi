@@ -537,23 +537,86 @@ button.force-white-text,
   -webkit-text-fill-color: #E9D5FF !important;
 }
 
-/* The bind figures in the rail. Brand-tinted rather than the usual grey
-   card: it is the number the whole step is about, and on a grey panel among
-   grey panels it stopped registering. */
+/* The bind figures in the rail — the number the whole step is about. A
+   white card inside a static purple→magenta stroke; the total's colour is
+   the only thing that moves.
+
+   The stroke is a second background layer clipped to the border box, under
+   a white layer clipped to the padding box. */
 .im-figures {
-  background: rgba(92,46,212,0.05);
-  border: 1px solid rgba(92,46,212,0.18);
+  border: 1.5px solid transparent;
+  background-image:
+    linear-gradient(#FFFFFF, #FFFFFF),
+    linear-gradient(88.09deg, #5C2ED4 0%, #A614C3 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
-.im-figures-rule { border-top: 1px solid rgba(92,46,212,0.18); }
-.im-figures-total { color: #5C2ED4; }
+.im-figures-rule { border-top: 1px solid rgba(92,46,212,0.14); }
+
+/* The total: the brand gradient as text colour, still — no motion and no
+   transform, so the figure never moves or changes size. */
+.im-figures-total {
+  background-image: linear-gradient(88.09deg, #5C2ED4 0%, #A614C3 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
 [data-dark="true"] .bop-page .im-figures,
 [data-dark="true"] .im-figures {
-  background: rgba(167,139,250,0.12) !important;
-  border-color: rgba(167,139,250,0.30) !important;
+  background-image:
+    linear-gradient(#252948, #252948),
+    linear-gradient(88.09deg, #A78BFA 0%, #E879F9 100%) !important;
 }
 [data-dark="true"] .bop-page .im-figures-rule,
-[data-dark="true"] .im-figures-rule { border-top-color: rgba(167,139,250,0.30) !important; }
-[data-dark="true"] .im-figures-total { color: #C4B5FD !important; }
+[data-dark="true"] .im-figures-rule { border-top-color: rgba(167,139,250,0.22) !important; }
+[data-dark="true"] .im-figures-total {
+  background-image: linear-gradient(88.09deg, #A78BFA 0%, #E879F9 100%) !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+/* Chosen payment / signature option on Bind: a static purple→magenta stroke
+   around a faintly tinted card, and a gradient radio with a white centre.
+   Same two-layer border trick as .im-figures, without the animation. */
+.im-choice-on {
+  border: 1.5px solid transparent;
+  background-image:
+    linear-gradient(#FBF7FF, #FBF7FF),
+    linear-gradient(88.09deg, #5C2ED4 0%, #A614C3 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+.im-radio-on  { background: linear-gradient(88.09deg, #5C2ED4 0%, #A614C3 100%); }
+.im-radio-dot { background: #FFFFFF; }
+[data-dark="true"] .bop-page .im-choice-on,
+[data-dark="true"] .im-choice-on {
+  background-image:
+    linear-gradient(#2E2A52, #2E2A52),
+    linear-gradient(88.09deg, #A78BFA 0%, #E879F9 100%) !important;
+}
+[data-dark="true"] .im-radio-on { background: linear-gradient(88.09deg, #A78BFA 0%, #E879F9 100%) !important; }
+
+/* Submission-complete card — the framed summary Commercial Auto and GL /
+   BOP end on, for Inland Marine's sent screen. Light values match those
+   pages' inline ones; dark matches their isDark branch. */
+.im-sub-card  { background: #FFFFFF; border: 1px solid #F3F4F6; }
+.im-sub-rule  { border-top: 1px solid #F3F4F6; }
+.im-sub-cell  { border-left: 1px solid #F3F4F6; }
+.im-sub-check { background: linear-gradient(88.09deg, rgba(92,46,212,0.12) 0%, rgba(166,20,195,0.12) 100%); }
+/* Light stops only — in dark, the existing linearGradient[id^="im"] rule
+   already swaps every im-prefixed gradient to the lighter pair. */
+.im-sub-stop-a { stop-color: #5C2ED4; }
+.im-sub-stop-b { stop-color: #A614C3; }
+.im-sub-print { border: 1px solid #E5E7EB; background: #FFFFFF; }
+.im-sub-print:hover { background: rgba(92,46,212,0.06); border-color: rgba(92,46,212,0.3); }
+[data-dark="true"] .bop-page .im-sub-card,
+[data-dark="true"] .im-sub-card  { background: #1A1E38 !important; border-color: rgba(255,255,255,0.06) !important; }
+[data-dark="true"] .im-sub-rule  { border-top-color: rgba(255,255,255,0.06) !important; }
+[data-dark="true"] .im-sub-cell  { border-left-color: rgba(255,255,255,0.06) !important; }
+[data-dark="true"] .im-sub-check { background: linear-gradient(88.09deg, rgba(92,46,212,0.45) 0%, rgba(166,20,195,0.45) 100%) !important; }
+[data-dark="true"] .im-sub-print { border-color: rgba(255,255,255,0.1) !important; background: rgba(255,255,255,0.05) !important; }
+[data-dark="true"] .im-sub-print:hover { background: rgba(167,139,250,0.15) !important; }
 
 /* Count pill — the number of items inside a collapsed group. Same tint the
    sidebar step badge uses: the gradient at 12% with brand-purple text, not a
